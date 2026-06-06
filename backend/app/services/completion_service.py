@@ -1,5 +1,18 @@
 from typing import List, Dict, Any
 
+def filter_problems_by_index(problems: List[Dict[str, Any]], min_notify_index: str) -> List[Dict[str, Any]]:
+    """Dynamically filters problems based on user's min_notify_index setting."""
+    filtered = []
+    for p in problems:
+        cid = p.get("contest_id")
+        idx = p.get("problem_index", "")
+        if cid and cid < 100000:
+            letter = ''.join([c for c in idx if c.isalpha()]).upper()
+            if letter and letter > min_notify_index:
+                continue
+        filtered.append(p)
+    return filtered
+
 def calculate_kpis(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculates dashboard KPI metrics from raw problem statuses."""
     pending_upsolves = len([p for p in problems if p.get("status") in ["wrong", "not_attempted"]])

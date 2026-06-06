@@ -12,9 +12,9 @@ from app.scheduler.email_trigger import check_and_send_emails
 # Setup Scheduler
 scheduler = BackgroundScheduler()
 # Run sync every 1 hour
-scheduler.add_job(sync_all_users, 'interval', hours=1)
+scheduler.add_job(sync_all_users, 'interval', minutes=30)
 # Check for pending emails every 1 hour
-scheduler.add_job(check_and_send_emails, 'interval', hours=1)
+scheduler.add_job(check_and_send_emails, 'interval', minutes=30)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

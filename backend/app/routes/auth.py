@@ -15,9 +15,11 @@ async def signup(user: UserSignup):
         raise HTTPException(status_code=400, detail="User with this handle already exists")
         
     try:
-        auth_response = supabase.auth.sign_up({
+        # Create user via admin API to avoid polluting the global client's JWT
+        auth_response = supabase.auth.admin.create_user({
             "email": user.email,
-            "password": user.password
+            "password": user.password,
+            "email_confirm": True
         })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -31,7 +33,7 @@ async def signup(user: UserSignup):
         "email": user.email,
         "email_enabled": True,
         "weekly_digest": True,
-        "min_notify_index": "C",
+        "min_notify_index": "Z",
         "include_virtual": False
     }
     

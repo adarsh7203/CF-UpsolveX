@@ -31,4 +31,6 @@ def calculate_priority_score(
     # Cap at 10 attempts to normalize
     attempt_score = min(failed_attempts / 10.0, 1.0)
     
-    return (w1 * recency_score) + (w2 * difficulty_score) + (w3 * attempt_score)
+    raw_score = (w1 * recency_score) + (w2 * difficulty_score) + (w3 * attempt_score)
+    # Scale to 1-10 to match UI logic (score > 5 is HIGH priority)
+    return round(raw_score * 10, 2)

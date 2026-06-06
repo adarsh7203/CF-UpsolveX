@@ -1,0 +1,68 @@
+:root {
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Color Palette - Deep Space Dark Mode */
+  --bg-base: #050510;       /* Darkest background */
+  --bg-surface: #0a0a1a;    /* Card background fallback */
+  
+  /* Glassmorphism Backgrounds */
+  --bg-glass: rgba(15, 15, 30, 0.4); 
+  --bg-glass-hover: rgba(25, 25, 45, 0.5);
+  --bg-glass-card: rgba(20, 20, 35, 0.35);
+  --bg-glass-nav: rgba(5, 5, 16, 0.6);
+  --bg-elevated: #1a1a2e;   /* Popovers, dropdowns */
+  
+  /* Accents */
+  --accent-primary: #4facfe;   /* Bright Blue */
+  --accent-primary-hover: #00f2fe;
+  --accent-secondary: #ff0844; /* Vibrant pink/red for accents */
+  --accent-secondary-hover: #ffb199;
+  --accent-gradient: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  --accent-glow: 0 0 20px rgba(79, 172, 254, 0.5);
+  
+  /* Text */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  
+  /* Status Colors */
+  --status-completed: #00f2fe;    /* Neon Cyan */
+  --status-upsolved: #4facfe;     /* Bright Blue */
+  --status-needs: #ff0844;        /* Neon Red */
+  --status-partial: #f6d365;      /* Neon Yellow */
+  
+  --status-completed-bg: rgba(0, 242, 254, 0.15);
+  --status-upsolved-bg: rgba(79, 172, 254, 0.15);
+  --status-needs-bg: rgba(255, 8, 68, 0.15);
+  --status-partial-bg: rgba(246, 211, 101, 0.15);
+  
+  /* Glassmorphism Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-glow: rgba(79, 172, 254, 0.3);
+  --glass-border: 1px solid var(--border-subtle);
+  
+  /* Backdrops & Shadows */
+  --backdrop-blur-sm: blur(8px);
+  --backdrop-blur: blur(16px);
+  --backdrop-blur-lg: blur(24px);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

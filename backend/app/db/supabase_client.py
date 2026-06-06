@@ -2,7 +2,7 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # We will expect SUPABASE_URL and SUPABASE_KEY to be set in a .env file
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")

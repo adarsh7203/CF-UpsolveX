@@ -23,7 +23,7 @@ class UserBase(BaseModel):
     email: EmailStr
     email_enabled: bool = True
     weekly_digest: bool = True
-    min_notify_index: str = "C"
+    min_notify_index: str = "Z"
     include_virtual: bool = False
 
 class UserCreate(UserBase):

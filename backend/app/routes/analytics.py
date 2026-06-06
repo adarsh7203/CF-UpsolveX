@@ -20,10 +20,15 @@ async def get_analytics(handle: str, user=Depends(verify_token)):
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    problems_res = supabase.table("user_problem_status").select("*, contests(start_time)").eq("user_id", user_id).execute()
-    problems = problems_res.data
+    problems_res = supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).execute()
     
-    analytics_data = generate_analytics_data(problems)
+    from app.services.completion_service import filter_problems_by_index
+    user_settings = supabase.table("users").select("min_notify_index").eq("id", user_id).execute()
+    min_notify_index = user_settings.data[0].get("min_notify_index", "Z").upper() if user_settings.data else "Z"
+    
+    filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)
+    
+    analytics_data = generate_analytics_data(filtered_problems)
     
     return {
         "handle": handle,

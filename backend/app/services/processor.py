@@ -1,4 +1,4 @@
-from app.services.codeforces import get_user_rating, get_user_status
+from app.services.codeforces import get_user_rating, get_user_status, get_user_info, get_all_contests, get_all_problems
 from app.db.supabase_client import supabase
 from datetime import datetime
 
@@ -11,16 +11,35 @@ async def sync_user_data(user_id: str, cf_handle: str):
     if not supabase:
         return {"status": "error", "message": "Database not connected"}
         
+    # Get user settings
+    user_res = supabase.table("users").select("min_notify_index", "include_virtual", "last_notified_contest_id").eq("id", user_id).execute()
+    user_settings = user_res.data[0] if user_res.data else {}
+    min_notify_index = user_settings.get("min_notify_index", "Z").upper()
+    include_virtual = user_settings.get("include_virtual", False)
+    last_notified = user_settings.get("last_notified_contest_id") or 0
+        
     rating_history = await get_user_rating(cf_handle)
     submissions = await get_user_status(cf_handle)
+    user_info = await get_user_info(cf_handle)
+    all_problems = await get_all_problems()
+    
+    # Update user's current rating and rank in the database
+    if user_info:
+        try:
+            supabase.table("users").update({
+                "rating": user_info.get("rating"),
+                "rank": user_info.get("rank")
+            }).eq("id", user_id).execute()
+        except Exception as e:
+            print(f"Failed to update user rating/rank: {e}")
+            pass
     
     # 1. Determine participated contests
-    # Signal 1: Rating updates
     participated_contest_ids = set([r["contestId"] for r in rating_history])
     
-    # Signal 2: Fallback to CONTESTANT submissions
     for sub in submissions:
-        if sub.get("author", {}).get("participantType") == "CONTESTANT":
+        p_type = sub.get("author", {}).get("participantType")
+        if p_type == "CONTESTANT" or (include_virtual and p_type in ["VIRTUAL", "OUT_OF_COMPETITION"]):
             cid = sub.get("contestId")
             if cid:
                 participated_contest_ids.add(cid)
@@ -28,9 +47,31 @@ async def sync_user_data(user_id: str, cf_handle: str):
     if not participated_contest_ids:
         return {"status": "success", "message": "No participated contests found"}
         
-    # 2. Process problems from participated contests
-    problem_status_map = {} # key: (contest_id, problem_index), value: dict
+    # 2. Pre-populate problem_status_map with ALL eligible problems from participated contests
+    problem_status_map = {}
+    contest_problem_counts = {}
     
+    for prob in all_problems:
+        cid = prob.get("contestId")
+        if cid in participated_contest_ids:
+            idx = prob.get("index", "")
+            # Only include if it's within the min_notify_index limit (e.g. 'A' <= 'C')
+            # Extract the letter part of the index (e.g., 'D1' -> 'D')
+            letter = ''.join([c for c in idx if c.isalpha()]).upper()
+            if letter and letter <= min_notify_index:
+                key = (cid, idx)
+                problem_status_map[key] = {
+                    "contest_id": cid,
+                    "problem_index": idx,
+                    "problem_rating": prob.get("rating"),
+                    "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
+                    "status": "not_attempted",
+                    "failed_attempts": 0,
+                    "solved_at": None
+                }
+                contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
+    
+    # 3. Process submissions to update statuses
     # Process oldest to newest
     for sub in reversed(submissions):
         cid = sub.get("contestId")
@@ -39,32 +80,22 @@ async def sync_user_data(user_id: str, cf_handle: str):
             
         prob = sub.get("problem", {})
         idx = prob.get("index")
-        if not idx:
+        key = (cid, idx)
+        
+        # We only care about problems that passed the min_notify_index filter
+        if key not in problem_status_map:
             continue
             
-        key = (cid, idx)
         verdict = sub.get("verdict")
         participant_type = sub.get("author", {}).get("participantType")
         
-        if key not in problem_status_map:
-            problem_status_map[key] = {
-                "contest_id": cid,
-                "problem_index": idx,
-                "problem_rating": prob.get("rating"), # can be None
-                "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
-                "status": "not_attempted",
-                "failed_attempts": 0,
-                "solved_at": None
-            }
-            
         current = problem_status_map[key]
         
-        # If already solved, skip further updates to status
         if current["status"] in ["solved", "upsolved"]:
             continue
             
         if verdict == "OK":
-            if participant_type in ["CONTESTANT", "OUT_OF_COMPETITION"]:
+            if participant_type in ["CONTESTANT", "OUT_OF_COMPETITION", "VIRTUAL"]:
                 current["status"] = "solved"
             else:
                 current["status"] = "upsolved"
@@ -74,22 +105,38 @@ async def sync_user_data(user_id: str, cf_handle: str):
             if current["status"] == "not_attempted":
                 current["status"] = "wrong"
                 
-    # 3. Upsert to Supabase
+    # 3. Upsert Contests to Supabase
+    unique_cids = list(set([cid for (cid, _) in problem_status_map.keys()]))
+    all_contests = await get_all_contests()
+    contest_info = {c["id"]: c for c in all_contests}
+    
+    contest_upsert_data = []
+    for cid in unique_cids:
+        c_data = contest_info.get(cid, {})
+        c_name = c_data.get("name", f"Codeforces Contest {cid}")
+        s_time = c_data.get("startTimeSeconds", datetime.now().timestamp())
+        duration = c_data.get("durationSeconds", 7200)
+        
+        contest_upsert_data.append({
+            "contest_id": cid,
+            "name": c_name,
+            "start_time": datetime.fromtimestamp(s_time).isoformat(),
+            "end_time": datetime.fromtimestamp(s_time + duration).isoformat(),
+            "total_problems": contest_problem_counts.get(cid, 5)
+        })
+        
+    if contest_upsert_data:
+        try:
+            supabase.table("contests").upsert(
+                contest_upsert_data,
+                on_conflict="contest_id"
+            ).execute()
+        except Exception as e:
+            print(f"Failed to upsert contests: {e}")
+
+    # 4. Upsert Problem Status to Supabase
     upsert_data = []
     for (cid, idx), data in problem_status_map.items():
-        # Ensure we add the contest to 'contests' table first so FK doesn't fail
-        # In a full implementation, we'd sync contests first. For MVP, we insert dummy contest data if missing.
-        try:
-            supabase.table("contests").upsert({
-                "contest_id": cid,
-                "name": f"Codeforces Contest {cid}",
-                "start_time": datetime.now().isoformat(), # Placeholder
-                "end_time": datetime.now().isoformat(),   # Placeholder
-                "total_problems": 5
-            }, on_conflict="contest_id").execute()
-        except Exception:
-            pass # Ignore if it already exists
-            
         upsert_data.append({
             "user_id": user_id,
             "contest_id": cid,
@@ -111,5 +158,13 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 ).execute()
         except Exception as e:
             return {"status": "error", "message": str(e)}
+            
+    # 5. Prevent email spam on first sync
+    if last_notified == 0 and participated_contest_ids:
+        max_cid = max(participated_contest_ids)
+        try:
+            supabase.table("users").update({"last_notified_contest_id": max_cid}).eq("id", user_id).execute()
+        except Exception as e:
+            print(f"Failed to set initial last_notified_contest_id: {e}")
             
     return {"status": "success", "processed_problems": len(upsert_data)}
