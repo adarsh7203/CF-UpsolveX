@@ -166,8 +166,8 @@ const Dashboard = () => {
           <span className="kpi-label">Total Contests</span>
         </div>
         <div className="kpi-card">
-          <span className="kpi-value">{kpis?.total_upsolved || 0}</span>
-          <span className="kpi-label">Total Upsolved</span>
+          <span className="kpi-value">{kpis?.total_solved || 0}</span>
+          <span className="kpi-label">Solved In-Contest</span>
         </div>
         <div className="kpi-card">
           <span className="kpi-value">{kpis?.completion_rate || 0}%</span>

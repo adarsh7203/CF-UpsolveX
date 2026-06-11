@@ -56,5 +56,5 @@ class KPIMetrics(BaseModel):
     completed_upsolves: int
     current_streak: int
     total_contests: int
-    total_upsolved: int
+    total_solved: int
     completion_rate: float

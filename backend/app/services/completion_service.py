@@ -32,6 +32,6 @@ def calculate_kpis(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
         "completed_upsolves": completed_upsolves,
         "current_streak": 0, # Planned feature
         "total_contests": total_contests,
-        "total_upsolved": completed_upsolves,
+        "total_solved": solved_during,
         "completion_rate": completion_rate
     }
