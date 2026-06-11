@@ -26,7 +26,7 @@
 **Backend**
 - Python 3 + FastAPI
 - APScheduler (for background cron jobs)
-- Resend + Jinja2 (for beautiful HTML email notifications)
+- Python smtplib (Gmail SMTP) + Jinja2 (for beautiful HTML email notifications)
 - Codeforces Official API
 
 **Database**
@@ -65,7 +65,8 @@ Create a `.env` file in the `backend/` directory:
 ```env
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_anon_key
-RESEND_API_KEY=your_resend_api_key
+EMAIL_ADDRESS=cfupsolvex@gmail.com
+EMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
 ```
 
 Run the FastAPI server:
@@ -93,8 +94,14 @@ npm run dev
 
 ---
 
-## 📬 Email System Note
-By default, CF UpsolveX uses [Resend](https://resend.com) to trigger email nudges. If you are on Resend's Free Tier without a verified custom domain, you can only send test emails to the exact email address registered to your Resend account. 
+## 📬 Email System Setup
+CF UpsolveX uses standard Gmail SMTP to send automated reminder emails. You must configure your `.env` file with a valid Gmail address and an **App Password** (your standard Gmail password will not work if 2-Factor Authentication is enabled).
+
+To generate an App Password:
+1. Go to your Google Account settings.
+2. Navigate to **Security** -> **2-Step Verification**.
+3. Scroll down to **App passwords** and generate a new 16-character password for this application.
+4. Add it to `EMAIL_APP_PASSWORD` in your `backend/.env` file.
 
 ---
 

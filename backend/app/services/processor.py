@@ -111,6 +111,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
     contest_info = {c["id"]: c for c in all_contests}
     
     contest_upsert_data = []
+    from datetime import timezone
     for cid in unique_cids:
         c_data = contest_info.get(cid, {})
         c_name = c_data.get("name", f"Codeforces Contest {cid}")
@@ -120,8 +121,8 @@ async def sync_user_data(user_id: str, cf_handle: str):
         contest_upsert_data.append({
             "contest_id": cid,
             "name": c_name,
-            "start_time": datetime.fromtimestamp(s_time).isoformat(),
-            "end_time": datetime.fromtimestamp(s_time + duration).isoformat(),
+            "start_time": datetime.fromtimestamp(s_time, tz=timezone.utc).isoformat(),
+            "end_time": datetime.fromtimestamp(s_time + duration, tz=timezone.utc).isoformat(),
             "total_problems": contest_problem_counts.get(cid, 5)
         })
         

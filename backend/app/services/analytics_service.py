@@ -63,6 +63,7 @@ def generate_analytics_data(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
             "name": data["name"],
             "solved": data["solved"],
             "upsolved": data["upsolved"],
+            "total": data["total"],
             "start_time": data["start_time"]
         })
         

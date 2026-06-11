@@ -60,7 +60,15 @@ const fetchWithAuth = async (endpoint, options = {}) => {
 
 export const dashboardApi = {
   getKPIs: (handle) => fetchWithAuth(`/dashboard/${handle}`),
-  getAnalytics: (handle) => fetchWithAuth(`/analytics/${handle}`),
+  getAnalytics: (handle, maxIndex, division) => {
+    let url = `/analytics/${handle}`;
+    const params = new URLSearchParams();
+    if (maxIndex) params.append('max_index', maxIndex);
+    if (division) params.append('division', division);
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+    return fetchWithAuth(url);
+  },
   getUpsolveQueue: (handle) => fetchWithAuth(`/upsolve/${handle}`),
 };
 

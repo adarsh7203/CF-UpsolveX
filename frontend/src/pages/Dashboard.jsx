@@ -22,17 +22,11 @@ const Dashboard = () => {
       try {
         setLoading(true);
         
-        let [kpiRes, upsolveRes, contestRes, allContests] = await Promise.all([
+        // 1. FAST QUERIES (From our Supabase DB)
+        const [kpiRes, contestRes] = await Promise.all([
           dashboardApi.getKPIs(profile.cf_handle),
-          dashboardApi.getUpsolveQueue(profile.cf_handle),
-          contestApi.getContests(profile.cf_handle),
-          fetchContests()
+          contestApi.getContests(profile.cf_handle)
         ]);
-
-        const upcoming = (allContests || [])
-          .filter(c => c.phase === 'BEFORE')
-          .sort((a, b) => a.startTimeSeconds - b.startTimeSeconds)
-          .slice(0, 3);
 
         // Auto-sync if data is completely empty and we haven't just tried syncing
         if ((kpiRes.kpis.total_contests === 0 || forceSync) && !syncing) {
@@ -41,25 +35,36 @@ const Dashboard = () => {
           await userApi.refreshData(profile.cf_handle);
           
           // Refetch after sync
-          const [newKpi, newUpsolve, newContest] = await Promise.all([
+          const [newKpi, newContest] = await Promise.all([
             dashboardApi.getKPIs(profile.cf_handle),
-            dashboardApi.getUpsolveQueue(profile.cf_handle),
             contestApi.getContests(profile.cf_handle)
           ]);
-          kpiRes = newKpi;
-          upsolveRes = newUpsolve;
-          contestRes = newContest;
+          setKpis(newKpi.kpis);
+          setRecentContests(newContest.contests.slice(0, 3));
           setSyncing(false);
+        } else {
+          setKpis(kpiRes.kpis);
+          setRecentContests(contestRes.contests.slice(0, 3));
         }
-        
-        setKpis(kpiRes.kpis);
-        setQueue(upsolveRes.queue);
-        setRecentContests(contestRes.contests.slice(0, 3));
-        setUpcomingContests(upcoming);
+
+        // Dashboard is now ready to render!
+        setLoading(false);
+
+        // 2. SLOW QUERY (From External Codeforces API)
+        // Fetch upcoming contests asynchronously without blocking the main dashboard
+        fetchContests().then(allContests => {
+          const upcoming = (allContests || [])
+            .filter(c => c.phase === 'BEFORE')
+            .sort((a, b) => a.startTimeSeconds - b.startTimeSeconds)
+            .slice(0, 3);
+          setUpcomingContests(upcoming);
+        }).catch(err => {
+          console.error("Failed to load upcoming contests:", err);
+        });
+
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
         setSyncing(false);
-      } finally {
         setLoading(false);
       }
     };
@@ -205,7 +210,7 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <a href={`https://codeforces.com/contestRegistration/${contest.id}`} target="_blank" rel="noopener noreferrer" className="view-details-link">
+                <a href={`https://codeforces.com/contests/${contest.id}`} target="_blank" rel="noopener noreferrer" className="view-details-link">
                   Register now <i className="fi fi-rr-arrow-small-right"></i>
                 </a>
               </div>

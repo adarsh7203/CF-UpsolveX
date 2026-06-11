@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contestApi, notifyApi } from '../services/api';
+import toast from 'react-hot-toast';
 import './ContestDetail.css';
 
 const ContestDetail = () => {
@@ -12,7 +13,8 @@ const ContestDetail = () => {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [manualSent, setManualSent] = useState(false);
+  const localKey = `reminder_${profile?.cf_handle}_${id}`;
+  const [manualSent, setManualSent] = useState(() => localStorage.getItem(localKey) === 'true');
   const [sendingEmail, setSendingEmail] = useState(false);
 
   const handleSendReminder = async () => {
@@ -21,10 +23,11 @@ const ContestDetail = () => {
       setSendingEmail(true);
       await notifyApi.triggerReminder(profile.cf_handle, id);
       setManualSent(true);
-      alert("Email reminder sent successfully!");
+      localStorage.setItem(localKey, 'true');
+      toast.success("Email reminder sent successfully!");
     } catch (err) {
       console.error(err);
-      alert(`Failed to send email: ${err.message}`);
+      toast.error(`Failed to send email: ${err.message}`);
     } finally {
       setSendingEmail(false);
     }
@@ -98,22 +101,47 @@ const ContestDetail = () => {
           <h1>{detail.name}</h1>
           <p>Review your performance and tackle the problems you missed.</p>
         </div>
-        <div className="reminder-status-container">
+        <div className="reminder-status-container" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           {(detail.reminder_sent || manualSent) ? (
-            <div className="reminder-status-badge" style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem', 
-              padding: '0.5rem 1rem', 
-              background: 'rgba(255, 255, 255, 0.05)', 
-              border: '1px solid rgba(255, 255, 255, 0.1)', 
-              borderRadius: 'var(--radius-full)',
-              fontSize: '0.85rem',
-              color: '#10b981'
-            }}>
-              <i className="fi fi-rr-check-circle"></i>
-              Email Reminder Sent
-            </div>
+            <>
+              <div className="reminder-status-badge" style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                padding: '0.5rem 1rem', 
+                background: 'rgba(16, 185, 129, 0.1)', 
+                border: '1px solid rgba(16, 185, 129, 0.2)', 
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.85rem',
+                color: '#10b981',
+                fontWeight: '600'
+              }}>
+                <i className="fi fi-rr-check-circle"></i>
+                Email Reminder Sent
+              </div>
+              <button 
+                onClick={handleSendReminder}
+                disabled={sendingEmail}
+                className="resend-reminder-btn"
+                style={{
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  padding: '0.5rem 1rem', 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  border: '1px solid rgba(255, 255, 255, 0.1)', 
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.85rem',
+                  color: '#e2e8f0',
+                  cursor: sendingEmail ? 'wait' : 'pointer',
+                  opacity: sendingEmail ? 0.7 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                <i className={`fi ${sendingEmail ? 'fi-rr-rotate-right sync-spin' : 'fi-rr-rotate-right'}`}></i>
+                {sendingEmail ? 'Sending...' : 'Resend'}
+              </button>
+            </>
           ) : (
             <button 
               onClick={handleSendReminder}
@@ -131,7 +159,8 @@ const ContestDetail = () => {
                 color: '#fff',
                 cursor: sendingEmail ? 'wait' : 'pointer',
                 opacity: sendingEmail ? 0.7 : 1,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                fontWeight: '600'
               }}
             >
               <i className={`fi ${sendingEmail ? 'fi-rr-rotate-right sync-spin' : 'fi-rr-envelope'}`}></i>

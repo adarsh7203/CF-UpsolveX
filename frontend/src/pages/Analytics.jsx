@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { dashboardApi } from '../services/api';
+import { dashboardApi, settingsApi } from '../services/api';
 import { 
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -73,13 +73,31 @@ const Analytics = () => {
   
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [maxIndex, setMaxIndex] = useState('');
+  const [contestTypeFilter, setContestTypeFilter] = useState('all');
+  const [initialSettingsLoaded, setInitialSettingsLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!profile?.cf_handle) return;
+      try {
+        const res = await settingsApi.getSettings(profile.cf_handle);
+        setMaxIndex(res.settings?.min_notify_index || 'Z');
+        setInitialSettingsLoaded(true);
+      } catch (err) {
+        setMaxIndex('Z');
+        setInitialSettingsLoaded(true);
+      }
+    };
+    fetchSettings();
+  }, [profile]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      if (!profile?.cf_handle) return;
+      if (!profile?.cf_handle || !initialSettingsLoaded) return;
       try {
         setLoading(true);
-        const res = await dashboardApi.getAnalytics(profile.cf_handle);
+        const res = await dashboardApi.getAnalytics(profile.cf_handle, maxIndex, contestTypeFilter);
         setAnalytics(res.analytics);
       } catch (err) {
         console.error("Failed to load analytics data:", err);
@@ -88,7 +106,7 @@ const Analytics = () => {
       }
     };
     fetchAnalytics();
-  }, [profile]);
+  }, [profile, maxIndex, contestTypeFilter, initialSettingsLoaded]);
 
   if (loading) {
     return (
@@ -118,17 +136,87 @@ const Analytics = () => {
   // Wait, I can just use a dummy 'unsolved' if it's missing, but I'll check what we have.
   const barData = analytics?.contest_performance?.map(c => ({
     ...c,
-    // Just a placeholder since the API didn't include total in contest_performance. 
-    // We can infer total if we matched it from completion_trend, but let's just make it look good.
-    unsolved: Math.max(1, Math.floor(Math.random() * 3)) 
+    // Calculate unsolved using the total from backend
+    unsolved: Math.max(0, (c.total || 0) - (c.solved || 0) - (c.upsolved || 0))
   })) || [];
 
   return (
-    <div className="analytics-page-container animate-fade-in">
-      <div className="page-header">
-        <div className="page-header-badge">• ANALYTICS</div>
-        <h1 className="page-title">Visualize Your Growth</h1>
-        <p className="page-subtitle">The Metrics That Show Whether You're Actually Improving — Not Just Practicing.</p>
+    <div className="analytics-page-container animate-fade-in" style={{ opacity: loading ? 0.7 : 1, transition: 'opacity 0.2s' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div>
+          <div className="page-header-badge">• ANALYTICS</div>
+          <h1 className="page-title">Visualize Your Growth</h1>
+          <p className="page-subtitle">The Metrics That Show Whether You're Actually Improving — Not Just Practicing.</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="queue-filter-card" style={{ 
+            background: 'var(--bg-glass-card)', 
+            padding: '1rem', 
+            borderRadius: 'var(--radius-lg)', 
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            minWidth: '180px'
+          }}>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>CONTEST TYPE</label>
+            <select 
+              value={contestTypeFilter} 
+              onChange={(e) => setContestTypeFilter(e.target.value)}
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                color: '#fff', 
+                border: '1px solid var(--border-color)', 
+                padding: '0.5rem', 
+                borderRadius: 'var(--radius-md)',
+                appearance: 'auto'
+              }}
+            >
+              <option style={{ background: '#1e293b', color: '#fff' }} value="all">All Types</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="div1">Div. 1</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="div2">Div. 2</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="div1+2">Div. 1 + Div. 2</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="div3">Div. 3</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="div4">Div. 4</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="edu">Educational</option>
+            </select>
+          </div>
+
+          <div className="queue-filter-card" style={{ 
+            background: 'var(--bg-glass-card)', 
+            padding: '1rem', 
+            borderRadius: 'var(--radius-lg)', 
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            minWidth: '180px'
+          }}>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>MAX PROBLEM INDEX</label>
+            <select 
+              value={maxIndex} 
+              onChange={(e) => setMaxIndex(e.target.value)}
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                color: '#fff', 
+                border: '1px solid var(--border-color)', 
+                padding: '0.5rem', 
+                borderRadius: 'var(--radius-md)',
+                appearance: 'auto'
+              }}
+            >
+              <option style={{ background: '#1e293b', color: '#fff' }} value="A">Up to A</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="B">Up to B</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="C">Up to C</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="D">Up to D</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="E">Up to E</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="F">Up to F</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="G">Up to G</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="Z">All Problems</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="analytics-grid">

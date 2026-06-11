@@ -19,7 +19,7 @@ async def get_upsolve_queue(handle: str):
     min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
     
     # Get all unsolved problems
-    problems_res = supabase.table("user_problem_status").select("*, contests(start_time)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).execute()
+    problems_res = supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).execute()
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)

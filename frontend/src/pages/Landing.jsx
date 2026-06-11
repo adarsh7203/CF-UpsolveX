@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, Code2, LineChart, Target, Zap } from 'lucide-react';
+import { ArrowRight, Code2, LineChart, Target, Zap, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Landing.css';
 
@@ -47,17 +47,17 @@ const Landing = () => {
       {/* Hero Section */}
       <header className="hero-section">
         <div className="hero-content">
-          <div className="badge animate-slide-up stagger-1">
+          {/* <div className="badge animate-slide-up stagger-1">
             <span className="pulse-dot"></span>
             Version 4.0 is now live
-          </div>
+          </div> */}
           
           <h1 className="hero-title animate-slide-up stagger-2">
             Track. Upsolve. <span className="text-gradient">Improve.</span>
           </h1>
           
           <p className="hero-subtitle animate-slide-up stagger-3">
-            The ultimate companion for competitive programmers. Automatically track your Codeforces contests, prioritize missed problems, and visualize your true rating potential.
+            The Ultimate Companion for Competitive Programmers. Automatically Track Your Codeforces Contests, Prioritize Missed Problems, and Visualize Your True Rating Potential.
           </p>
           
           <div className="hero-cta animate-slide-up stagger-4">
@@ -74,7 +74,7 @@ const Landing = () => {
 
       {/* Features Section */}
       <section className="features-section">
-        <h2 className="section-title">Everything you need to reach Candidate Master</h2>
+        <h2 className="section-title">Everything You Need To Reach Candidate Master</h2>
         <div className="features-grid">
           {features.map((feature, idx) => (
             <div key={idx} className="feature-card glass-panel">
@@ -90,7 +90,7 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p>© 2026 CF UpsolveX. Built for competitive programmers.</p>
+        <p>© 2026 CF UpsolveX. Built for Competitive Programmers.</p>
       </footer>
     </div>
   );
