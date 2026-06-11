@@ -180,7 +180,7 @@ const Dashboard = () => {
     <div className="dashboard-container animate-fade-in">
       
       {/* Welcome Message & Filters */}
-      <div className="dashboard-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+      <div className="dashboard-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '0' }}>
         <h1 className="welcome-title" style={{ margin: 0 }}>
           Welcome Back, <span className={getRankClass(profile?.rank)}>{formatRank(profile?.rank)}!</span>
         </h1>
