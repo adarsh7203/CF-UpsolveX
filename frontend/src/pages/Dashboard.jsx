@@ -187,13 +187,13 @@ const Dashboard = () => {
         
         <div className="queue-filter-card" style={{ 
             background: 'var(--bg-glass-card)', 
-            padding: '0.75rem 1rem', 
+            padding: '1rem', 
             borderRadius: 'var(--radius-lg)', 
             border: '1px solid var(--border-subtle)',
             display: 'flex',
             flexDirection: 'column',
             gap: '0.25rem',
-            minWidth: '150px'
+            minWidth: '180px'
           }}>
             <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>MAX PROBLEM INDEX</label>
             <select 
