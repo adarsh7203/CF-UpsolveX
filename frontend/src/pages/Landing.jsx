@@ -51,15 +51,15 @@ const Landing = () => {
             <span className="pulse-dot"></span>
             Version 4.0 is now live
           </div> */}
-          
+
           <h1 className="hero-title animate-slide-up stagger-2">
             Track. Upsolve. <span className="text-gradient">Improve.</span>
           </h1>
-          
+
           <p className="hero-subtitle animate-slide-up stagger-3">
             The Ultimate Companion for Competitive Programmers. Automatically Track Your Codeforces Contests, Prioritize Missed Problems, and Visualize Your True Rating Potential.
           </p>
-          
+
           <div className="hero-cta animate-slide-up stagger-4">
             <Link to="/auth" className="btn-primary btn-large">
               Start Upsolving <ArrowRight size={20} />

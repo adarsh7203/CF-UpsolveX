@@ -20,7 +20,7 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <div className="navbar-container">
-          
+
           {/* Left: Brand */}
           <div className="navbar-brand">
             <div className="brand-info">
@@ -32,8 +32,8 @@ const Navbar = () => {
           {/* Center: Navigation Links */}
           <div className="navbar-nav">
             {navItems.map((item) => (
-              <NavLink 
-                key={item.path} 
+              <NavLink
+                key={item.path}
                 to={item.path}
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               >
@@ -45,7 +45,7 @@ const Navbar = () => {
 
           {/* Right: User Profile & Actions */}
           <div className="navbar-actions">
-            <div className="user-profile" onClick={() => setIsProfileModalOpen(true)} style={{cursor: 'pointer'}}>
+            <div className="user-profile" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
               <div className="user-avatar">
                 {profile?.avatar ? (
                   <img src={profile.avatar} alt="Avatar" className="avatar-img" />
@@ -59,9 +59,9 @@ const Navbar = () => {
                   {profile?.rating ? `${profile.rating} - ${profile.rank || 'Unrated'}` : 'Unrated'}
                 </span>
               </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); signOut(); }} 
-                className="logout-btn" 
+              <button
+                onClick={(e) => { e.stopPropagation(); signOut(); }}
+                className="logout-btn"
                 title="Sign Out"
               >
                 <i className="fi fi-rr-sign-out-alt"></i> Logout
@@ -72,10 +72,10 @@ const Navbar = () => {
         </div>
       </nav>
 
-      <ProfileModal 
-        isOpen={isProfileModalOpen} 
-        onClose={() => setIsProfileModalOpen(false)} 
-        profile={profile} 
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        profile={profile}
       />
     </>
   );
