@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dashboardApi, contestApi, userApi } from '../services/api';
+import { dashboardApi, contestApi, userApi, settingsApi, clearApiCache } from '../services/api';
 import { fetchContests } from '../services/codeforces';
+import toast from 'react-hot-toast';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -15,6 +16,8 @@ const Dashboard = () => {
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [maxIndex, setMaxIndex] = useState('Z');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async (forceSync = false) => {
@@ -23,10 +26,13 @@ const Dashboard = () => {
         setLoading(true);
         
         // 1. FAST QUERIES (From our Supabase DB)
-        const [kpiRes, contestRes] = await Promise.all([
+        const [kpiRes, contestRes, settingsRes] = await Promise.all([
           dashboardApi.getKPIs(profile.cf_handle),
-          contestApi.getContests(profile.cf_handle)
+          contestApi.getContests(profile.cf_handle),
+          settingsApi.getSettings(profile.cf_handle)
         ]);
+
+        setMaxIndex(settingsRes.settings?.min_notify_index || 'Z');
 
         // Auto-sync if data is completely empty and we haven't just tried syncing
         if ((kpiRes.kpis.total_contests === 0 || forceSync) && !syncing) {
@@ -70,6 +76,39 @@ const Dashboard = () => {
     };
     fetchDashboardData();
   }, [profile]);
+
+  const handleIndexChange = async (e) => {
+    const newIndex = e.target.value;
+    setMaxIndex(newIndex);
+    
+    if (!profile?.cf_handle) return;
+    try {
+      setIsUpdating(true);
+      const resSettings = await settingsApi.getSettings(profile.cf_handle);
+      const currentSettings = resSettings.settings;
+      const payload = {
+        cf_handle: currentSettings.cf_handle,
+        email: currentSettings.email,
+        email_enabled: currentSettings.email_enabled,
+        weekly_digest: currentSettings.weekly_digest,
+        min_notify_index: newIndex,
+        include_virtual: currentSettings.include_virtual
+      };
+      
+      await settingsApi.updateSettings(profile.cf_handle, payload);
+      
+      // Invalidate cache and refetch KPIs
+      clearApiCache();
+      const newKpi = await dashboardApi.getKPIs(profile.cf_handle);
+      setKpis(newKpi.kpis);
+      toast.success("Dashboard metrics updated!");
+    } catch (err) {
+      console.error("Failed to update index:", err);
+      toast.error("Failed to update problem index.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const formatStartTime = (isoString) => {
     if (!isoString) return 'Unknown Date';
@@ -140,11 +179,48 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container animate-fade-in">
       
-      {/* Welcome Message */}
-      <div className="dashboard-welcome">
-        <h1 className="welcome-title">
+      {/* Welcome Message & Filters */}
+      <div className="dashboard-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+        <h1 className="welcome-title" style={{ margin: 0 }}>
           Welcome Back, <span className={getRankClass(profile?.rank)}>{formatRank(profile?.rank)}!</span>
         </h1>
+        
+        <div className="queue-filter-card" style={{ 
+            background: 'var(--bg-glass-card)', 
+            padding: '0.75rem 1rem', 
+            borderRadius: 'var(--radius-lg)', 
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem',
+            minWidth: '150px'
+          }}>
+            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>MAX PROBLEM INDEX</label>
+            <select 
+              value={maxIndex} 
+              onChange={handleIndexChange}
+              disabled={isUpdating}
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                color: '#fff', 
+                border: '1px solid var(--border-color)', 
+                padding: '0.4rem', 
+                borderRadius: 'var(--radius-md)',
+                appearance: 'auto',
+                opacity: isUpdating ? 0.5 : 1,
+                fontSize: '0.9rem'
+              }}
+            >
+              <option style={{ background: '#1e293b', color: '#fff' }} value="A">Up to A</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="B">Up to B</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="C">Up to C</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="D">Up to D</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="E">Up to E</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="F">Up to F</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="G">Up to G</option>
+              <option style={{ background: '#1e293b', color: '#fff' }} value="Z">All Problems</option>
+            </select>
+          </div>
       </div>
 
       {/* KPIs */}
