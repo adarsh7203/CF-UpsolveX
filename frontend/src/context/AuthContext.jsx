@@ -67,7 +67,10 @@ export const AuthProvider = ({ children }) => {
     session,
     user,
     profile,
-    signOut: () => supabase.auth.signOut(),
+    signOut: async () => {
+      localStorage.removeItem('wasLoggedIn');
+      await supabase.auth.signOut();
+    },
   };
 
   return (
