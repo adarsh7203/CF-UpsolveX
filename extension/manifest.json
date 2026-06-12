@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "CF UpsolveX Companion",
+  "version": "1.0.0",
+  "description": "Your Codeforces productivity companion. See your priority upsolve queue directly on Codeforces.",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": [
+    "*://*.codeforces.com/*",
+    "http://localhost:8000/*",
+    "https://cfupsolvex-api.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.codeforces.com/*"],
+      "css": ["content.css"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CF UpsolveX Settings"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

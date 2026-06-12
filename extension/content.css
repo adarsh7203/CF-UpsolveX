@@ -1,0 +1,238 @@
+/* CF UpsolveX Extension Styles */
+:root {
+  --ux-bg: #121212;
+  --ux-bg-secondary: #1e1e1e;
+  --ux-bg-hover: #2c2c2c;
+  --ux-border: #333333;
+  --ux-text-main: #ffffff;
+  --ux-text-muted: #aaaaaa;
+  --ux-primary: #4a90e2;
+  --ux-primary-hover: #357abd;
+  --ux-high: #ff5252;
+  --ux-med: #ff9800;
+  --ux-low: #2196f3;
+}
+
+/* Sidebar Container */
+#cf-upsolvex-sidebar {
+  position: fixed;
+  top: 0;
+  right: -320px; /* Hidden initially */
+  width: 320px;
+  height: 100vh;
+  background-color: var(--ux-bg);
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+  z-index: 999999;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ux-text-main);
+  box-sizing: border-box;
+  border-left: 1px solid var(--ux-border);
+}
+
+#cf-upsolvex-sidebar.open {
+  right: 0;
+}
+
+/* Toggle Button */
+#cf-upsolvex-toggle {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: var(--ux-primary);
+  color: #fff;
+  padding: 12px 8px;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  z-index: 999998;
+  font-weight: 600;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 1px;
+}
+#cf-upsolvex-toggle.open {
+  right: 320px;
+}
+
+/* Sidebar Header */
+.ux-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--ux-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ux-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ux-text-main);
+}
+.ux-header .ux-subtitle {
+  font-size: 12px;
+  color: var(--ux-text-muted);
+  margin-top: 4px;
+}
+.ux-close-btn {
+  cursor: pointer;
+  color: var(--ux-text-muted);
+  font-size: 20px;
+}
+.ux-close-btn:hover {
+  color: var(--ux-text-main);
+}
+
+/* Stats Widget */
+.ux-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--ux-border);
+  background-color: var(--ux-bg-secondary);
+}
+.ux-stat-box {
+  background: var(--ux-bg);
+  border: 1px solid var(--ux-border);
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+.ux-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ux-primary);
+}
+.ux-stat-label {
+  font-size: 11px;
+  color: var(--ux-text-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* Queue Section */
+.ux-queue-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+.ux-queue-container::-webkit-scrollbar {
+  width: 6px;
+}
+.ux-queue-container::-webkit-scrollbar-thumb {
+  background: var(--ux-border);
+  border-radius: 3px;
+}
+.ux-queue-item {
+  display: flex;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--ux-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+  align-items: center;
+}
+.ux-queue-item:hover {
+  background-color: var(--ux-bg-hover);
+}
+.ux-item-details {
+  flex: 1;
+}
+.ux-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fff;
+}
+.ux-item-meta {
+  font-size: 12px;
+  color: var(--ux-text-muted);
+}
+
+/* Badges */
+.ux-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.ux-badge-high {
+  background-color: rgba(255, 82, 82, 0.15);
+  color: var(--ux-high);
+}
+.ux-badge-med {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: var(--ux-med);
+}
+.ux-badge-low {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: var(--ux-low);
+}
+
+/* Footer / CTA */
+.ux-footer {
+  padding: 20px;
+  border-top: 1px solid var(--ux-border);
+  background-color: var(--ux-bg-secondary);
+  text-align: center;
+}
+.ux-footer-text {
+  font-size: 12px;
+  color: var(--ux-text-muted);
+  margin-bottom: 12px;
+}
+.ux-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--ux-primary);
+  color: white !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+.ux-btn:hover {
+  background-color: var(--ux-primary-hover);
+}
+
+/* Page Widgets (Problem / Contest / Profile) */
+.ux-widget {
+  background-color: var(--ux-bg);
+  border: 1px solid var(--ux-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  color: var(--ux-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.ux-widget h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: var(--ux-primary);
+  border-bottom: 1px solid var(--ux-border);
+  padding-bottom: 8px;
+}
+.ux-widget-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.ux-widget-label {
+  color: var(--ux-text-muted);
+}
+.ux-widget-val {
+  font-weight: 600;
+}

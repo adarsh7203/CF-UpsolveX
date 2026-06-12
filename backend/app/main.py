@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Import routers here once they are implemented
-from app.routes import user, contest, upsolve, analytics, dashboard, notify, settings, auth
+from app.routes import user, contest, upsolve, analytics, dashboard, notify, settings, auth, extension
 from app.services.auth_middleware import verify_token
 from app.scheduler.contest_checker import sync_all_users
 from app.scheduler.email_trigger import check_and_send_emails
@@ -40,8 +40,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Public Auth routes
+# Public routes
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(extension.router, prefix="/api/extension", tags=["Extension"])
 
 # Protected routes (Require JWT Session)
 protected = [Depends(verify_token)]
