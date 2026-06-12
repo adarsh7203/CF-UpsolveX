@@ -77,6 +77,27 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [profile]);
 
+  const handleManualSync = async () => {
+    if (!profile?.cf_handle) return;
+    try {
+      setSyncing(true);
+      await userApi.refreshData(profile.cf_handle);
+      clearApiCache();
+      
+      const [newKpi, newContest] = await Promise.all([
+        dashboardApi.getKPIs(profile.cf_handle),
+        contestApi.getContests(profile.cf_handle)
+      ]);
+      setKpis(newKpi.kpis);
+      setRecentContests(newContest.contests.slice(0, 3));
+      toast.success("Successfully synced with Codeforces!");
+    } catch (err) {
+      toast.error("Failed to sync: " + err.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const handleIndexChange = async (e) => {
     const newIndex = e.target.value;
     setMaxIndex(newIndex);
@@ -185,7 +206,30 @@ const Dashboard = () => {
           Welcome Back, <span className={getRankClass(profile?.rank)}>{formatRank(profile?.rank)}!</span>
         </h1>
         
-        <div className="queue-filter-card" style={{ 
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            onClick={handleManualSync}
+            disabled={syncing}
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: 'white',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-md)',
+              cursor: syncing ? 'wait' : 'pointer',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              height: 'fit-content'
+            }}
+            className="sync-hover-btn"
+          >
+            <i className={`fi ${syncing ? 'fi-rr-rotate-right sync-spin' : 'fi-rr-rotate-right'}`}></i>
+            {syncing ? 'Syncing...' : 'Sync Codeforces'}
+          </button>
+
+          <div className="queue-filter-card" style={{ 
             background: 'var(--bg-glass-card)', 
             padding: '1rem', 
             borderRadius: 'var(--radius-lg)', 
@@ -221,6 +265,7 @@ const Dashboard = () => {
               <option style={{ background: '#1e293b', color: '#fff' }} value="Z">All Problems</option>
             </select>
           </div>
+        </div>
       </div>
 
       {/* KPIs */}

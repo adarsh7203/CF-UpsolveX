@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { contestApi, settingsApi, clearApiCache } from '../services/api';
+import { contestApi, settingsApi, userApi, clearApiCache } from '../services/api';
 import toast from 'react-hot-toast';
 import './Contests.css';
 
@@ -15,6 +15,24 @@ const Contests = () => {
   const [maxIndex, setMaxIndex] = useState('Z');
   const [contestTypeFilter, setContestTypeFilter] = useState('all');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleManualSync = async () => {
+    if (!profile?.cf_handle) return;
+    try {
+      setSyncing(true);
+      await userApi.refreshData(profile.cf_handle);
+      clearApiCache();
+      
+      const data = await contestApi.getContests(profile.cf_handle);
+      setContests(data.contests || []);
+      toast.success("Successfully synced with Codeforces!");
+    } catch (err) {
+      toast.error("Failed to sync: " + err.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const loadContestsAndSettings = async () => {
@@ -119,7 +137,7 @@ const Contests = () => {
           <p className="page-subtitle">Every Rated Round You Participated In, With Completion Progress and Missed Problems.</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div className="queue-filter-card" style={{ 
             background: 'var(--bg-glass-card)', 
             padding: '1rem', 
@@ -153,40 +171,65 @@ const Contests = () => {
             </select>
           </div>
 
-          <div className="queue-filter-card" style={{ 
-            background: 'var(--bg-glass-card)', 
-            padding: '1rem', 
-            borderRadius: 'var(--radius-lg)', 
-            border: '1px solid var(--border-subtle)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            minWidth: '180px'
-          }}>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>MAX PROBLEM INDEX</label>
-            <select 
-              value={maxIndex} 
-              onChange={handleIndexChange}
-              disabled={isUpdating}
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                color: '#fff', 
-                border: '1px solid var(--border-color)', 
-                padding: '0.5rem', 
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="queue-filter-card" style={{ 
+              background: 'var(--bg-glass-card)', 
+              padding: '1rem', 
+              borderRadius: 'var(--radius-lg)', 
+              border: '1px solid var(--border-subtle)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              minWidth: '180px'
+            }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>MAX PROBLEM INDEX</label>
+              <select 
+                value={maxIndex} 
+                onChange={handleIndexChange}
+                disabled={isUpdating}
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  color: '#fff', 
+                  border: '1px solid var(--border-color)', 
+                  padding: '0.5rem', 
+                  borderRadius: 'var(--radius-md)',
+                  appearance: 'auto',
+                  opacity: isUpdating ? 0.5 : 1
+                }}
+              >
+                <option style={{ background: '#1e293b', color: '#fff' }} value="A">Up to A</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="B">Up to B</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="C">Up to C</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="D">Up to D</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="E">Up to E</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="F">Up to F</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="G">Up to G</option>
+                <option style={{ background: '#1e293b', color: '#fff' }} value="Z">All Problems</option>
+              </select>
+            </div>
+            <button 
+              onClick={handleManualSync}
+              disabled={syncing}
+              style={{
+                padding: '0.6rem 1rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'white',
+                border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-md)',
-                appearance: 'auto',
-                opacity: isUpdating ? 0.5 : 1
+                cursor: syncing ? 'wait' : 'pointer',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                width: '100%',
+                fontSize: '0.85rem'
               }}
+              className="sync-hover-btn"
             >
-              <option style={{ background: '#1e293b', color: '#fff' }} value="A">Up to A</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="B">Up to B</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="C">Up to C</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="D">Up to D</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="E">Up to E</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="F">Up to F</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="G">Up to G</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="Z">All Problems</option>
-            </select>
+              <i className={`fi ${syncing ? 'fi-rr-rotate-right sync-spin' : 'fi-rr-rotate-right'}`}></i>
+              {syncing ? 'Syncing...' : 'Sync Codeforces'}
+            </button>
           </div>
         </div>
       </div>
