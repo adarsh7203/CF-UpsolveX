@@ -1,22 +1,20 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 
 load_dotenv()
 
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "")
-EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD", "")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "cfupsolvex@gmail.com")
 
 # Setup Jinja2 environment
 template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
 env = Environment(loader=FileSystemLoader(template_dir))
 
 def send_reminder_email(user_email: str, contest_name: str, completion_percent: float, solved: int, total: int, missed: int, upsolve_queue: List[Dict[str, Any]], dashboard_link: str):
-    """Sends the active nudge email via Gmail SMTP with a beautiful HTML template."""
+    """Sends the active nudge email via Brevo's HTTP API with a beautiful HTML template."""
     
     # 1. Plain text fallback
     queue_text = ""
@@ -56,34 +54,35 @@ Track. Upsolve. Improve.
         print(f"Template rendering failed: {e}")
         html_body = "" # Fallback to just plain text
     
-    if not EMAIL_ADDRESS or not EMAIL_APP_PASSWORD:
-        print("EMAIL_ADDRESS or EMAIL_APP_PASSWORD not set. Simulating email payload (check server logs for HTML content)")
+    if not BREVO_API_KEY:
+        print("BREVO_API_KEY not set. Simulating email payload (check server logs for HTML content)")
         return {"status": "simulated", "body": plain_text_body, "has_html": bool(html_body)}
 
-    # 3. Construct the email message
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = "CF UpsolveX -- Don't Skip Your Missed Problems"
-    msg['From'] = f"CF UpsolveX <{EMAIL_ADDRESS}>"
-    msg['To'] = user_email
-
-    # Attach plain text
-    part1 = MIMEText(plain_text_body, 'plain')
-    msg.attach(part1)
-
-    # Attach HTML if available
+    # 3. Construct payload for Brevo API
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+    
+    payload = {
+        "sender": {"name": "CF UpsolveX", "email": EMAIL_ADDRESS},
+        "to": [{"email": user_email}],
+        "subject": "CF UpsolveX -- Don't Skip Your Missed Problems",
+        "textContent": plain_text_body
+    }
+    
     if html_body:
-        part2 = MIMEText(html_body, 'html')
-        msg.attach(part2)
+        payload["htmlContent"] = html_body
 
-    # 4. Send the email via Gmail SMTP
+    # 4. Send via HTTP API
     try:
-        # Create secure connection with server and send email
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(EMAIL_ADDRESS, EMAIL_APP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        return {"status": "success", "message": f"Email sent to {user_email}"}
-    except Exception as e:
-        print(f"Failed to send email via SMTP: {e}")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status() # Raise exception for 4xx or 5xx codes
+        return {"status": "success", "message": f"Email sent to {user_email} via Brevo"}
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send email via Brevo API: {e}")
+        if e.response is not None:
+            print(f"Response data: {e.response.text}")
         return None

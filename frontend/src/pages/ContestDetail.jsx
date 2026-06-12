@@ -21,10 +21,16 @@ const ContestDetail = () => {
     if (!profile?.cf_handle || !id) return;
     try {
       setSendingEmail(true);
-      await notifyApi.triggerReminder(profile.cf_handle, id);
-      setManualSent(true);
-      localStorage.setItem(localKey, 'true');
-      toast.success("Email reminder sent successfully!");
+      const res = await notifyApi.triggerReminder(profile.cf_handle, id);
+      if (res.result && res.result.status === 'success') {
+        setManualSent(true);
+        localStorage.setItem(localKey, 'true');
+        toast.success("Email reminder sent successfully!");
+      } else if (res.result && res.result.status === 'simulated') {
+        toast.error("Email simulated (credentials missing on server)");
+      } else {
+        toast.error("Failed to send email (SMTP error or Google block)");
+      }
     } catch (err) {
       console.error(err);
       toast.error(`Failed to send email: ${err.message}`);
