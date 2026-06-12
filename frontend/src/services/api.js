@@ -46,7 +46,16 @@ const fetchWithAuth = async (endpoint, options = {}) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `Request failed with status ${response.status}`);
+    const errorMsg = errorData.detail || `Request failed with status ${response.status}`;
+    
+    // If backend rejects the JWT (e.g. user deleted from db but browser still has token), auto logout
+    if (response.status === 401 && (errorMsg.includes('JWT') || errorMsg.includes('Authentication failed'))) {
+      await supabase.auth.signOut();
+      localStorage.removeItem('wasLoggedIn');
+      window.location.href = '/login';
+    }
+    
+    throw new Error(errorMsg);
   }
 
   const data = await response.json();
