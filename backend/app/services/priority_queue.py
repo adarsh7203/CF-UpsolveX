@@ -1,10 +1,12 @@
 import datetime
+import math
 from typing import Optional
 
 def calculate_priority_score(
     contest_start_time: datetime.datetime,
     problem_rating: Optional[int],
     failed_attempts: int,
+    user_rating: Optional[int] = None,
     w1: float = 0.50,
     w2: float = 0.30,
     w3: float = 0.20
@@ -18,18 +20,20 @@ def calculate_priority_score(
     if contest_start_time.tzinfo is None:
         contest_start_time = contest_start_time.replace(tzinfo=datetime.timezone.utc)
         
-    days_since_contest = max(1, (now - contest_start_time).days)
+    days_since_contest = max(0, (now - contest_start_time).days)
     
-    # RecencyScore - inverse of days since contest
-    recency_score = 1.0 / days_since_contest
+    # RecencyScore: exp(-DaysSinceContest / 30)
+    recency_score = math.exp(-days_since_contest / 30.0)
     
-    # DifficultyScore - normalized Codeforces rating (max rating ~3500)
+    # DifficultyScore: bell curve around user rating
     actual_rating = problem_rating if problem_rating else 800
-    difficulty_score = min(actual_rating / 3500.0, 1.0)
+    u_rating = user_rating if user_rating else 1500
+    delta = abs(actual_rating - u_rating)
+    sigma = 300.0
+    difficulty_score = math.exp(-(delta ** 2) / (2 * (sigma ** 2)))
     
     # AttemptScore - more attempts means known weak spot
-    # Cap at 10 attempts to normalize
-    attempt_score = min(failed_attempts / 10.0, 1.0)
+    attempt_score = min(1.0, 0.25 * failed_attempts)
     
     raw_score = (w1 * recency_score) + (w2 * difficulty_score) + (w3 * attempt_score)
     # Scale to 1-10 to match UI logic (score > 5 is HIGH priority)

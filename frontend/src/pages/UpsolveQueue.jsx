@@ -107,11 +107,11 @@ const UpsolveQueue = () => {
               <div className="tooltip-content">
                 <strong>Priority Formula Weights:</strong>
                 <ul>
-                  <li><strong>Recency (50%):</strong> 1 / days_since_contest</li>
-                  <li><strong>Difficulty (30%):</strong> min(problem_rating / 3500, 1.0)</li>
-                  <li><strong>Attempts (20%):</strong> min(failed_attempts / 10, 1.0)</li>
+                  <li><strong>Recency (50%):</strong> exp(-days_since_contest / 30)</li>
+                  <li><strong>Difficulty (30%):</strong> exp(-(delta²) / (2 × 300²))</li>
+                  <li><strong>Attempts (20%):</strong> min(failed_attempts × 0.25, 1.0)</li>
                 </ul>
-                <em style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* Total score is normalized to a 10-point scale. High priority = score {'>'} 5.</em>
+                <em style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* delta = |problem_rating - user_rating|. Total score is normalized to a 10-point scale.</em>
               </div>
             </div>
           </div>

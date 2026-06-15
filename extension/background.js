@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch((err) => sendResponse({ success: false, error: err.message }));
     return true; // Keep message channel open for async response
   }
-  
+
   if (request.action === "forceSync") {
     syncQueueData()
       .then((data) => sendResponse({ success: true, data }))
@@ -55,13 +55,13 @@ async function fetchData(handle) {
       throw new Error(`API returned ${response.status}`);
     }
     const data = await response.json();
-    
+
     // Save to storage
-    await chrome.storage.local.set({ 
+    await chrome.storage.local.set({
       cachedData: data,
       lastSync: Date.now()
     });
-    
+
     return data;
   } catch (error) {
     console.error("Failed to fetch CF UpsolveX data:", error);
