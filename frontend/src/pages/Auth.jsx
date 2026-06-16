@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
-import { Code2, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Code2, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import './Auth.css';
 
 const Auth = () => {
@@ -64,6 +64,33 @@ const Auth = () => {
       {/* Decorative Orbs */}
       <div className="glow-orb orb-1"></div>
       <div className="glow-orb orb-2"></div>
+
+      <button 
+        onClick={() => navigate('/')} 
+        style={{ 
+          position: 'absolute', 
+          top: '2rem', 
+          left: '2rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem', 
+          background: 'var(--bg-glass)', 
+          backdropFilter: 'blur(10px)', 
+          border: '1px solid var(--border-subtle)', 
+          padding: '0.5rem 1rem', 
+          borderRadius: 'var(--radius-xl)', 
+          color: 'var(--text-muted)', 
+          cursor: 'pointer', 
+          fontSize: '0.9rem', 
+          fontWeight: 500, 
+          transition: 'all 0.2s',
+          zIndex: 10
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateX(-3px)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.transform = 'translateX(0)'; }}
+      >
+        <ArrowLeft size={16} /> Back to Home
+      </button>
 
       <div className="auth-container glass-panel animate-slide-up">
         <div className="auth-header">

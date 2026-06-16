@@ -268,6 +268,43 @@ const Settings = () => {
         {/* RIGHT COLUMN */}
         <div className="settings-right-col">
           
+          {/* ABOUT ME SECTION */}
+          <div className="settings-panel" style={{ 
+            border: '1px solid rgba(59, 130, 246, 0.2)', 
+            background: 'linear-gradient(to bottom right, rgba(15, 23, 42, 0.6), rgba(30, 58, 138, 0.1))',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Background artistic glow */}
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: '#3b82f6', filter: 'blur(70px)', opacity: 0.15, borderRadius: '50%' }}></div>
+            
+            <div className="settings-panel-header" style={{ position: 'relative', zIndex: 1 }}>
+              <i className="fi fi-rr-code-branch" style={{ color: '#60a5fa' }}></i>
+              <h3 style={{ color: '#60a5fa', fontWeight: 600 }}>About the Developer</h3>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div>
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Adarsh Gupta</h4>
+                
+                <div style={{ padding: '0.8rem 1.2rem', position: 'relative', background: 'rgba(0,0,0,0.25)', borderRadius: 'var(--radius-lg)', borderLeft: '2px solid #3b82f6', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <em style={{ color: '#e2e8f0', fontSize: '0.95rem', lineHeight: '1.6', display: 'block', fontStyle: 'italic', letterSpacing: '0.01em', position: 'relative', zIndex: 1 }}>
+                    For the coders, by a coder. Build the queue, grind the problems and turn those reds into greens.
+                  </em>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <a href="https://codeforces.com/profile/adarsh7203" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', textDecoration: 'none', fontSize: '0.95rem', transition: 'all 0.2s', fontWeight: 500 }} onMouseOver={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                  Codeforces
+                </a>
+                <a href="https://linkedin.com/in/adarsh7203" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', textDecoration: 'none', fontSize: '0.95rem', transition: 'all 0.2s', fontWeight: 500 }} onMouseOver={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                  <i className="fi fi-brands-linkedin" style={{ color: '#0ea5e9' }}></i> LinkedIn
+                </a>
+              </div>
+            </div>
+          </div>
+          
           <form className="settings-panel" onSubmit={submitPasswordChange} style={{ border: '1px solid rgba(239, 68, 68, 0.3)' }}>
             <div className="settings-panel-header">
               <i className="fi fi-rr-lock" style={{ color: '#ef4444' }}></i>

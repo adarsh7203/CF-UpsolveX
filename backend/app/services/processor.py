@@ -55,10 +55,9 @@ async def sync_user_data(user_id: str, cf_handle: str):
         cid = prob.get("contestId")
         if cid in participated_contest_ids:
             idx = prob.get("index", "")
-            # Only include if it's within the min_notify_index limit (e.g. 'A' <= 'C')
             # Extract the letter part of the index (e.g., 'D1' -> 'D')
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
-            if letter and letter <= min_notify_index:
+            if letter:
                 key = (cid, idx)
                 problem_status_map[key] = {
                     "contest_id": cid,
@@ -113,16 +112,22 @@ async def sync_user_data(user_id: str, cf_handle: str):
     contest_upsert_data = []
     from datetime import timezone
     for cid in unique_cids:
-        c_data = contest_info.get(cid, {})
-        c_name = c_data.get("name", f"Codeforces Contest {cid}")
-        s_time = c_data.get("startTimeSeconds", datetime.now().timestamp())
-        duration = c_data.get("durationSeconds", 7200)
-        
+        c_data = contest_info.get(cid)
+        if c_data:
+            c_name = c_data.get("name", f"Codeforces Contest {cid}")
+            s_time = c_data.get("startTimeSeconds", 0)
+            duration = c_data.get("durationSeconds", 7200)
+        else:
+            c_name = f"Codeforces Contest {cid}"
+            sub_times = [s.get("creationTimeSeconds", 0) for s in submissions if s.get("contestId") == cid]
+            s_time = min(sub_times) if sub_times else 0
+            duration = 7200
+            
         contest_upsert_data.append({
             "contest_id": cid,
             "name": c_name,
-            "start_time": datetime.fromtimestamp(s_time, tz=timezone.utc).isoformat(),
-            "end_time": datetime.fromtimestamp(s_time + duration, tz=timezone.utc).isoformat(),
+            "start_time": datetime.fromtimestamp(s_time, tz=timezone.utc).isoformat() if s_time else None,
+            "end_time": datetime.fromtimestamp(s_time + duration, tz=timezone.utc).isoformat() if s_time else None,
             "total_problems": contest_problem_counts.get(cid, 5)
         })
         

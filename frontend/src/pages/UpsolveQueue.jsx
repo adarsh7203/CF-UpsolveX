@@ -108,10 +108,18 @@ const UpsolveQueue = () => {
                 <strong>Priority Formula Weights:</strong>
                 <ul>
                   <li><strong>Recency (50%):</strong> exp(-days_since_contest / 30)</li>
-                  <li><strong>Difficulty (30%):</strong> exp(-(delta²) / (2 × 300²))</li>
+                  <li><strong>Difficulty (30%):</strong> exp(-(delta²) / (2 × σ²)), where σ=300</li>
                   <li><strong>Attempts (20%):</strong> min(failed_attempts × 0.25, 1.0)</li>
                 </ul>
-                <em style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* delta = |problem_rating - user_rating|. Total score is normalized to a 10-point scale.</em>
+                <em style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  * delta = |problem_rating - user_rating|.<br />
+                  * Total score is normalized to a 10-point scale.
+                </em>
+                <div style={{ marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Priority algorithm designed by <a href="https://codeforces.com/profile/abhijeetballabh_23" target="_blank" rel="noopener noreferrer" style={{ color: '#c4b5fd', textDecoration: 'none', fontWeight: 600 }}>abhijeetballabh_23</a> (Candidate Master)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
