@@ -27,6 +27,28 @@ export const AuthProvider = ({ children }) => {
             fullProfile.rank = cfInfo.rank;
             fullProfile.avatar = cfInfo.titlePhoto || cfInfo.avatar;
             fullProfile.cf_info = cfInfo; // Store full Codeforces profile details
+            localStorage.setItem(`cf_profile_${data.cf_handle}`, JSON.stringify(cfInfo));
+          } else {
+            // Fallback to localStorage if API is down
+            const cachedInfoStr = localStorage.getItem(`cf_profile_${data.cf_handle}`);
+            if (cachedInfoStr) {
+              try {
+                const cachedInfo = JSON.parse(cachedInfoStr);
+                fullProfile.rating = cachedInfo.rating;
+                fullProfile.rank = cachedInfo.rank;
+                fullProfile.avatar = cachedInfo.titlePhoto || cachedInfo.avatar;
+                fullProfile.cf_info = cachedInfo;
+              } catch (e) {
+                console.error("Failed to parse cached profile", e);
+                // Worst case fallback to Supabase fields
+                fullProfile.rating = data.rating;
+                fullProfile.rank = data.rank;
+              }
+            } else {
+              // Worst case fallback to Supabase fields
+              fullProfile.rating = data.rating;
+              fullProfile.rank = data.rank;
+            }
           }
         }
         setProfile(fullProfile);
