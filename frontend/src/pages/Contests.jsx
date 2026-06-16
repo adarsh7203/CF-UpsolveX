@@ -11,7 +11,7 @@ const Contests = () => {
 
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('official');
+  const [activeTab, setActiveTab] = useState('all');
   const [maxIndex, setMaxIndex] = useState('Z');
   const [contestTypeFilter, setContestTypeFilter] = useState('all');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -111,8 +111,18 @@ const Contests = () => {
   }
 
   const filteredContests = contests.filter(c => {
-    const isVirtualMatch = activeTab === 'virtual' ? c.is_virtual : !c.is_virtual;
-    if (!isVirtualMatch) return false;
+    let category;
+    if (c.is_missed) {
+      category = 'missed';
+    } else if (c.is_virtual) {
+      category = 'virtual';
+    } else {
+      category = 'official';
+    }
+
+    if (activeTab !== 'all' && category !== activeTab) {
+      return false;
+    }
     
     if (contestTypeFilter === 'all') return true;
     
@@ -236,6 +246,12 @@ const Contests = () => {
 
       <div className="tabs-container">
         <button
+          className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveTab('all')}
+        >
+          All Contests
+        </button>
+        <button
           className={`tab-btn ${activeTab === 'official' ? 'active' : ''}`}
           onClick={() => setActiveTab('official')}
         >
@@ -247,6 +263,12 @@ const Contests = () => {
         >
           Unrated Contests
         </button>
+        <button
+          className={`tab-btn ${activeTab === 'missed' ? 'active' : ''}`}
+          onClick={() => setActiveTab('missed')}
+        >
+          Missed Contests
+        </button>
       </div>
 
       <div className="contests-page-grid" style={{ opacity: isUpdating ? 0.5 : 1, transition: 'opacity 0.2s' }}>
@@ -256,7 +278,10 @@ const Contests = () => {
             let badgeClass = 'badge-needs';
             let badgeText = 'NEEDS UPSOLVING';
 
-            if (contest.completion_percentage === 100) {
+            if (contest.is_missed) {
+              badgeClass = 'badge-missed';
+              badgeText = 'MISSED';
+            } else if (contest.completion_percentage === 100) {
               badgeClass = 'badge-completed';
               badgeText = 'COMPLETED';
             } else if (contest.completion_percentage > 0) {
@@ -295,8 +320,8 @@ const Contests = () => {
                     <span>{contest.completion_percentage}%</span>
                   </div>
                   <div className="progress-track">
-                    <div className="progress-fill fill-solved" style={{ width: `${(contest.solved / contest.total_problems) * 100}%` }}></div>
-                    <div className="progress-fill fill-upsolved" style={{ width: `${(contest.upsolved / contest.total_problems) * 100}%` }}></div>
+                    <div className="progress-fill fill-solved" style={{ width: `${contest.total_problems ? (contest.solved / contest.total_problems) * 100 : 0}%` }}></div>
+                    <div className="progress-fill fill-upsolved" style={{ width: `${contest.total_problems ? (contest.upsolved / contest.total_problems) * 100 : 0}%` }}></div>
                   </div>
                 </div>
 
@@ -326,12 +351,12 @@ const Contests = () => {
               <i className="fi fi-rr-box-open"></i>
             </div>
             <h3 style={{ fontSize: '1.25rem', color: '#fff', margin: 0 }}>
-              No {activeTab === 'official' ? 'rated' : 'unrated'} contests found
+              No {activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contests found
             </h3>
             <p style={{ color: 'var(--text-muted)', margin: 0, maxWidth: '400px' }}>
               {contestTypeFilter === 'all' 
-                ? `You don't have any ${activeTab === 'official' ? 'rated' : 'unrated'} contest history synced yet.` 
-                : `We couldn't find any ${activeTab === 'official' ? 'rated' : 'unrated'} contests matching your "${contestTypeFilter.toUpperCase()}" filter.`}
+                ? `You don't have any ${activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contest history synced yet.` 
+                : `We couldn't find any ${activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contests matching your "${contestTypeFilter.toUpperCase()}" filter.`}
             </p>
           </div>
         )}

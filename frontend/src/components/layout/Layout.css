@@ -172,7 +172,7 @@
 .user-details {
   display: flex;
   flex-direction: column;
-  max-width: 120px;
+  max-width: 180px;
   overflow: hidden;
 }
 
@@ -188,6 +188,9 @@
 .user-rating {
   font-size: 0.7rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logout-btn {

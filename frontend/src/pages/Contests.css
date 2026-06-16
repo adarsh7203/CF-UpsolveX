@@ -81,3 +81,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.badge-missed {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}

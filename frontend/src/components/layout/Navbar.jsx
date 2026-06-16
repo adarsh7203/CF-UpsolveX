@@ -8,6 +8,11 @@ const Navbar = () => {
   const { profile, signOut } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  const formatRank = (rank) => {
+    if (!rank) return 'Unrated';
+    return rank.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
+
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: 'fi-rr-apps' },
     { name: 'Queue', path: '/queue', icon: 'fi-rr-list' },
@@ -56,7 +61,7 @@ const Navbar = () => {
               <div className="user-details">
                 <span className="user-handle">{profile?.cf_handle || 'User'}</span>
                 <span className="user-rating">
-                  {profile?.rating ? `${profile.rating} - ${profile.rank || 'Unrated'}` : 'Unrated'}
+                  {profile?.rating ? `${profile.rating} - ${formatRank(profile.rank)}` : 'Unrated'}
                 </span>
               </div>
               <button

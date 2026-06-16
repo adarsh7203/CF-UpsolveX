@@ -30,11 +30,45 @@ async def get_contests(handle: str, user=Depends(verify_token)):
     results = format_contest_history(filtered_problems)
     
     # Tag virtual contests dynamically
+    from app.services.codeforces import get_user_rating, get_user_info, get_all_contests
+    
     rating_history = await get_user_rating(handle)
     official_cids = {r["contestId"] for r in rating_history}
     
+    participated_cids = set()
     for c in results:
         c["is_virtual"] = c["contest_id"] not in official_cids
+        c["is_missed"] = False
+        participated_cids.add(c["contest_id"])
+        
+    # Append missed contests
+    cf_info = await get_user_info(handle)
+    reg_time = cf_info.get("registrationTimeSeconds", 0) if cf_info else 0
+    
+    all_cf_contests = await get_all_contests()
+    from datetime import datetime, timezone
+    
+    for cf_c in all_cf_contests:
+        if cf_c.get("phase") == "FINISHED":
+            start_time_sec = cf_c.get("startTimeSeconds", 0)
+            cid = cf_c.get("id")
+            # Only consider contests after registration and not participated in
+            if start_time_sec >= reg_time and cid not in participated_cids:
+                results.append({
+                    "contest_id": cid,
+                    "name": cf_c.get("name"),
+                    "start_time": datetime.fromtimestamp(start_time_sec, tz=timezone.utc).isoformat(),
+                    "solved": 0,
+                    "upsolved": 0,
+                    "total_problems": 0,
+                    "problems": [],
+                    "completion_percentage": 0,
+                    "is_virtual": False,
+                    "is_missed": True
+                })
+                
+    # Sort again since we appended new contests
+    results.sort(key=lambda x: x["start_time"] or "", reverse=True)
     
     return {"handle": handle, "contests": results}
 

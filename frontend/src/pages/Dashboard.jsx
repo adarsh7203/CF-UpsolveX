@@ -206,7 +206,7 @@ const Dashboard = () => {
           Welcome Back, <span className={getRankClass(profile?.rank)}>{formatRank(profile?.rank)}!</span>
         </h1>
         
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginLeft: 'auto' }}>
           <button 
             onClick={handleManualSync}
             disabled={syncing}
