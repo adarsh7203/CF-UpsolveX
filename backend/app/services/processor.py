@@ -87,7 +87,71 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
     
     # 3. Process submissions to update statuses
-    # Process oldest to newest
+    # First, ensure any problems the user submitted to are in the map
+    # (Fixes CF API bug where shared Div2 problems are omitted from problemset.problems)
+    for sub in submissions:
+        cid = sub.get("contestId")
+        if cid not in target_contest_ids:
+            continue
+            
+        prob = sub.get("problem", {})
+        idx = prob.get("index")
+        key = (cid, idx)
+        
+        if key not in problem_status_map:
+            letter = ''.join([c for c in idx if c.isalpha()]).upper()
+            if letter:
+                is_virt = False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
+                problem_status_map[key] = {
+                    "contest_id": cid,
+                    "problem_index": idx,
+                    "problem_rating": prob.get("rating"),
+                    "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
+                    "status": "not_attempted",
+                    "failed_attempts": 0,
+                    "solved_at": None,
+                    "is_virtual": is_virt
+                }
+                contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
+
+    # Now augment ANY bugged participated contests (< 4 problems) to get unattempted problems
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            augment_count = 0
+            for cid in target_contest_ids:
+                if contest_problem_counts.get(cid, 0) < 4 and augment_count < 15:
+                    augment_count += 1
+                    try:
+                        res = await client.get(f"https://codeforces.com/api/contest.status?contestId={cid}&from=1&count=500", timeout=5)
+                        if res.status_code == 200:
+                            data = res.json()
+                            if data.get("status") == "OK":
+                                for sub in data.get("result", []):
+                                    prob = sub.get("problem", {})
+                                    idx = prob.get("index")
+                                    key = (cid, idx)
+                                    if key not in problem_status_map:
+                                        letter = ''.join([c for c in idx if c.isalpha()]).upper()
+                                        if letter:
+                                            is_virt = False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
+                                            problem_status_map[key] = {
+                                                "contest_id": cid,
+                                                "problem_index": idx,
+                                                "problem_rating": prob.get("rating"),
+                                                "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
+                                                "status": "not_attempted",
+                                                "failed_attempts": 0,
+                                                "solved_at": None,
+                                                "is_virtual": is_virt
+                                            }
+                                            contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+    # Process oldest to newest to update statuses correctly
     for sub in reversed(submissions):
         cid = sub.get("contestId")
         if cid not in target_contest_ids:
@@ -97,7 +161,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
         idx = prob.get("index")
         key = (cid, idx)
         
-        # We only care about problems that passed the min_notify_index filter
+        # At this point, ALL relevant problems should be in the map
         if key not in problem_status_map:
             continue
             
