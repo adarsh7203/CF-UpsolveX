@@ -20,7 +20,7 @@ async def get_contests(handle: str, user=Depends(verify_token)):
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    problems_res = supabase.table("user_problem_status").select("*, contests(*)").eq("user_id", user_id).execute()
+    problems_res = supabase.table("user_problem_status").select("*, contests(*)").eq("user_id", user_id).limit(5000).execute()
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)
@@ -45,7 +45,7 @@ async def get_contest_detail(handle: str, contest_id: int, user=Depends(verify_t
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    problems_res = supabase.table("user_problem_status").select("*").eq("user_id", user_id).eq("contest_id", contest_id).order("problem_index").execute()
+    problems_res = supabase.table("user_problem_status").select("*").eq("user_id", user_id).eq("contest_id", contest_id).order("problem_index").limit(5000).execute()
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)
