@@ -35,7 +35,8 @@ async def sync_user_data(user_id: str, cf_handle: str):
             pass
     
     # 1. Determine participated contests
-    participated_contest_ids = set([r["contestId"] for r in rating_history])
+    official_contest_ids = set([r["contestId"] for r in rating_history])
+    participated_contest_ids = set(official_contest_ids)
     
     for sub in submissions:
         p_type = sub.get("author", {}).get("participantType")
@@ -43,6 +44,15 @@ async def sync_user_data(user_id: str, cf_handle: str):
             cid = sub.get("contestId")
             if cid:
                 participated_contest_ids.add(cid)
+                
+    # Also add all missed contests after user registration
+    all_contests = await get_all_contests()
+    reg_time = user_info.get("registrationTimeSeconds", 0) if user_info else 0
+    for cf_c in all_contests:
+        if cf_c.get("phase") == "FINISHED":
+            start_time = cf_c.get("startTimeSeconds", 0)
+            if start_time >= reg_time:
+                participated_contest_ids.add(cf_c.get("id"))
                 
     if not participated_contest_ids:
         return {"status": "success", "message": "No participated contests found"}
@@ -66,7 +76,8 @@ async def sync_user_data(user_id: str, cf_handle: str):
                     "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
                     "status": "not_attempted",
                     "failed_attempts": 0,
-                    "solved_at": None
+                    "solved_at": None,
+                    "is_virtual": cid not in official_contest_ids
                 }
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
     
@@ -106,7 +117,6 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 
     # 3. Upsert Contests to Supabase
     unique_cids = list(set([cid for (cid, _) in problem_status_map.keys()]))
-    all_contests = await get_all_contests()
     contest_info = {c["id"]: c for c in all_contests}
     
     contest_upsert_data = []
@@ -151,7 +161,8 @@ async def sync_user_data(user_id: str, cf_handle: str):
             "problem_url": data["problem_url"],
             "status": data["status"],
             "failed_attempts": data["failed_attempts"],
-            "solved_at": data["solved_at"]
+            "solved_at": data["solved_at"],
+            "is_virtual": data["is_virtual"]
         })
         
     if upsert_data:
