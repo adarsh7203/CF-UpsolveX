@@ -20,7 +20,7 @@ async def get_analytics(handle: str, max_index: str = None, division: str = "all
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    problems_res = supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).execute()
+    problems_res = supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).in_("is_virtual", [True, False]).execute()
     
     from app.services.completion_service import filter_problems_by_index
     

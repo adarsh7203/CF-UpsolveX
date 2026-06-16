@@ -22,7 +22,7 @@ async def get_dashboard(handle: str, user=Depends(verify_token)):
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
     # Get all problem statuses for this user
-    problems_res = supabase.table("user_problem_status").select("*").eq("user_id", user_id).execute()
+    problems_res = supabase.table("user_problem_status").select("*").eq("user_id", user_id).in_("is_virtual", [True, False]).execute()
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)
