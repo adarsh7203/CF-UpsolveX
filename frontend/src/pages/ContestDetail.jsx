@@ -19,6 +19,19 @@ const ContestDetail = () => {
 
   const handleSendReminder = async () => {
     if (!profile?.cf_handle || !id) return;
+    
+    if (detail?.is_missed) {
+      toast("Email reminders are only available for contests you've participated in.", {
+        icon: 'ℹ️',
+        style: {
+          borderRadius: '10px',
+          background: '#1e293b',
+          color: '#fff',
+        },
+      });
+      return;
+    }
+
     try {
       setSendingEmail(true);
       const res = await notifyApi.triggerReminder(profile.cf_handle, id);
@@ -104,11 +117,20 @@ const ContestDetail = () => {
 
       <div className="contest-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1>{detail.name}</h1>
-          <p>Review your performance and tackle the problems you missed.</p>
+          <a 
+            href={`https://codeforces.com/contest/${id}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            className="contest-title-link hover-brighten"
+          >
+            <h1 style={{ margin: 0 }}>{detail.name}</h1>
+            <i className="fi fi-rr-arrow-up-right-from-square" style={{ fontSize: '1.2rem', opacity: 0.5, marginTop: '5px' }}></i>
+          </a>
+          <p style={{ marginTop: '0.5rem' }}>Review your performance and tackle the problems you missed.</p>
         </div>
         <div className="reminder-status-container" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {(detail.reminder_sent || manualSent) ? (
+          {(!detail.is_missed && (detail.reminder_sent || manualSent)) ? (
             <>
               <div className="reminder-status-badge" style={{ 
                 display: 'flex', 

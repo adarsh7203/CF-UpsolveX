@@ -163,3 +163,14 @@
   background: var(--primary-color);
   color: #fff;
 }
+
+.contest-title-link:hover h1 {
+  color: var(--primary);
+}
+.contest-title-link:hover i {
+  opacity: 1 !important;
+  color: var(--primary);
+}
+.contest-title-link {
+  transition: all 0.2s ease;
+}

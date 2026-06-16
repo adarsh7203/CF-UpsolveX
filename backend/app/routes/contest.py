@@ -59,10 +59,17 @@ async def get_contest_detail(handle: str, contest_id: int, user=Depends(verify_t
     contest_res = supabase.table("contests").select("*").eq("contest_id", contest_id).execute()
     contest_name = contest_res.data[0]["name"] if contest_res.data else f"Contest {contest_id}"
     
+    is_missed = False
+    if filtered_problems:
+        is_virt = filtered_problems[0].get("is_virtual")
+        if is_virt is None:
+            is_missed = True
+
     return {
         "handle": handle, 
         "contest_id": contest_id, 
         "name": contest_name,
         "problems": filtered_problems,
-        "reminder_sent": int(contest_id) <= last_notified
+        "reminder_sent": int(contest_id) <= last_notified and not is_missed,
+        "is_missed": is_missed
     }
