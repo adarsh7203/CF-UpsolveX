@@ -1,7 +1,20 @@
 import httpx
+import time
 from typing import List, Dict, Any
 
 CF_API_BASE = "https://codeforces.com/api"
+
+_cache = {}
+
+def get_cached(key: str, ttl_seconds: int = 300):
+    if key in _cache:
+        entry = _cache[key]
+        if time.time() - entry["time"] < ttl_seconds:
+            return entry["data"]
+    return None
+
+def set_cached(key: str, data: Any):
+    _cache[key] = {"time": time.time(), "data": data}
 
 async def get_user_rating(handle: str) -> List[Dict[str, Any]]:
     """Fetch rating history for a user (Signal 1 for participation)."""
@@ -27,6 +40,11 @@ async def get_user_info(handle: str) -> Dict[str, Any]:
 
 async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any]]:
     """Fetch user submissions (Signal 2 and for checking solved/wrong/upsolved)."""
+    cache_key = f"user_status_{handle}_{count}"
+    cached_data = get_cached(cache_key, ttl_seconds=120)
+    if cached_data is not None:
+        return cached_data
+        
     async with httpx.AsyncClient() as client:
         # count=10000 to get a large history, can be optimized later
         response = await client.get(f"{CF_API_BASE}/user.status", params={"handle": handle, "from": 1, "count": count, "lang": "en"})
@@ -34,27 +52,43 @@ async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any
             return []
         data = response.json()
         if data.get("status") == "OK":
-            return data.get("result", [])
+            res = data.get("result", [])
+            set_cached(cache_key, res)
+            return res
         return []
 
 async def get_all_contests() -> List[Dict[str, Any]]:
     """Fetch all contests to get names and times."""
+    cache_key = "all_contests"
+    cached_data = get_cached(cache_key, ttl_seconds=3600)
+    if cached_data is not None:
+        return cached_data
+        
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{CF_API_BASE}/contest.list", params={"lang": "en"})
         if response.status_code != 200:
             return []
         data = response.json()
         if data.get("status") == "OK":
-            return data.get("result", [])
+            res = data.get("result", [])
+            set_cached(cache_key, res)
+            return res
         return []
 
 async def get_all_problems() -> List[Dict[str, Any]]:
     """Fetch all problems from the Codeforces problemset."""
+    cache_key = "all_problems"
+    cached_data = get_cached(cache_key, ttl_seconds=3600)
+    if cached_data is not None:
+        return cached_data
+        
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{CF_API_BASE}/problemset.problems", params={"lang": "en"})
         if response.status_code != 200:
             return []
         data = response.json()
         if data.get("status") == "OK" and "problems" in data.get("result", {}):
-            return data.get("result")["problems"]
+            res = data.get("result")["problems"]
+            set_cached(cache_key, res)
+            return res
         return []
