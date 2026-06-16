@@ -12,12 +12,15 @@ async def get_upsolve_queue(handle: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
         
-    user_res = supabase.table("users").select("id, min_notify_index, rating").eq("cf_handle", handle).execute()
+    user_res = supabase.table("users").select("id, min_notify_index").eq("cf_handle", handle).execute()
     if not user_res.data:
         raise HTTPException(status_code=404, detail="User not found")
     user_id = user_res.data[0]["id"]
     min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
-    user_rating = user_res.data[0].get("rating")
+    
+    from app.services.codeforces import get_user_info
+    cf_info = await get_user_info(handle)
+    user_rating = cf_info.get("rating") if cf_info else None
     
     # Get all unsolved problems
     problems_res = supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).execute()
