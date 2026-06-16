@@ -20,7 +20,8 @@ async def get_analytics(handle: str, max_index: str = None, division: str = "all
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    problems_res = supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).in_("is_virtual", [True, False]).limit(5000).execute()
+    from app.db.supabase_client import fetch_all
+    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).in_("is_virtual", [True, False]))
     
     from app.services.completion_service import filter_problems_by_index
     
@@ -31,9 +32,9 @@ async def get_analytics(handle: str, max_index: str = None, division: str = "all
         active_index = user_settings.data[0].get("min_notify_index", "Z").upper() if user_settings.data else "Z"
         
     print(f"DEBUG: get_analytics called with handle={handle}, max_index={max_index}, active_index={active_index}, division={division}")
-    print(f"DEBUG: Before filtering, problems count: {len(problems_res.data)}")
+    print(f"DEBUG: Before filtering, problems count: {len(problems_data)}")
         
-    filtered_problems = filter_problems_by_index(problems_res.data, active_index)
+    filtered_problems = filter_problems_by_index(problems_data, active_index)
     print(f"DEBUG: After index filter ({active_index}), count: {len(filtered_problems)}")
     
     # Apply division filtering

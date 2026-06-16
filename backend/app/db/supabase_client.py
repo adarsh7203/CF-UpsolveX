@@ -18,3 +18,16 @@ try:
     supabase = get_supabase_client()
 except Exception:
     supabase = None  # Handle gracefully if env vars aren't set yet
+
+def fetch_all(query_builder) -> list:
+    """Helper to paginate through all rows, bypassing PostgREST 1000 row limits."""
+    all_data = []
+    offset = 0
+    limit = 1000
+    while True:
+        res = query_builder.range(offset, offset + limit - 1).execute()
+        all_data.extend(res.data)
+        if len(res.data) < limit:
+            break
+        offset += limit
+    return all_data

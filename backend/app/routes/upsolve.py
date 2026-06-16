@@ -20,10 +20,11 @@ async def get_upsolve_queue(handle: str):
     user_rating = user_res.data[0].get("rating")
     
     # Get all unsolved problems
-    problems_res = supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).in_("is_virtual", [True, False]).limit(5000).execute()
+    from app.db.supabase_client import fetch_all
+    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).in_("is_virtual", [True, False]))
     
     from app.services.completion_service import filter_problems_by_index
-    filtered_problems = filter_problems_by_index(problems_res.data, min_notify_index)
+    filtered_problems = filter_problems_by_index(problems_data, min_notify_index)
     
     queue = []
     for p in filtered_problems:
