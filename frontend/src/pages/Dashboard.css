@@ -406,3 +406,72 @@
   position: relative;
   z-index: 1;
 }
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .dashboard-container {
+    gap: 1.5rem;
+  }
+
+  .welcome-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .contests-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .contest-card {
+    padding: 1.25rem;
+  }
+  
+  .contest-name {
+    font-size: 1rem;
+    white-space: normal; /* Let long names wrap on mobile */
+  }
+
+  .contest-stats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .stat-block {
+    margin: 0;
+    flex: 1 1 calc(33.333% - 0.5rem);
+    padding: 0.5rem;
+  }
+
+  .stat-num {
+    font-size: 1.1rem;
+  }
+  
+  .stat-label {
+    font-size: 0.6rem;
+  }
+
+  .sync-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .sync-title {
+    font-size: 1.5rem;
+  }
+  
+  .sync-subtitle {
+    font-size: 0.95rem;
+  }
+}

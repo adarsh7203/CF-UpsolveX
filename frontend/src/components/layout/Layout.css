@@ -249,3 +249,90 @@
 .animate-slide-up {
   animation: slideUp 0.4s ease-out forwards;
 }
+
+/* --- MOBILE RESPONSIVENESS --- */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .navbar-container {
+    padding: 0;
+  }
+
+  .navbar-brand {
+    min-width: auto;
+    flex: 1;
+  }
+
+  /* Dropdown styling for mobile nav */
+  .navbar-nav {
+    display: flex;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: rgba(11, 15, 25, 0.98); /* Much less transparent */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+    
+    /* Smooth Dropdown Animation */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    pointer-events: none;
+  }
+
+  .navbar-nav.mobile-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-item {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Adjust brand and actions space */
+  .navbar-actions {
+    min-width: auto;
+  }
+  
+  .user-details {
+    display: none; /* Hide handle/rating on small screens to save space */
+  }
+  
+  .logout-text {
+    display: none; /* Hide text, just show icon */
+  }
+  
+  .logout-btn {
+    padding: 0.5rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}

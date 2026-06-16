@@ -7,6 +7,7 @@ import './Layout.css';
 const Navbar = () => {
   const { profile, signOut } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const formatRank = (rank) => {
     if (!rank) return 'Unrated';
@@ -26,6 +27,14 @@ const Navbar = () => {
       <nav className="navbar">
         <div className="navbar-container">
 
+          {/* Hamburger Menu Button */}
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <i className={`fi ${isMobileMenuOpen ? 'fi-rr-cross' : 'fi-rr-menu-burger'}`}></i>
+          </button>
+
           {/* Left: Brand */}
           <div className="navbar-brand">
             <div className="brand-info">
@@ -35,12 +44,13 @@ const Navbar = () => {
           </div>
 
           {/* Center: Navigation Links */}
-          <div className="navbar-nav">
+          <div className={`navbar-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <i className={`fi ${item.icon} nav-icon`}></i>
                 <span>{item.name}</span>
@@ -69,7 +79,7 @@ const Navbar = () => {
                 className="logout-btn"
                 title="Sign Out"
               >
-                <i className="fi fi-rr-sign-out-alt"></i> Logout
+                <i className="fi fi-rr-sign-out-alt"></i> <span className="logout-text">Logout</span>
               </button>
             </div>
           </div>

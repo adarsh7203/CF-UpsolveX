@@ -102,7 +102,7 @@ const UpsolveQueue = () => {
           <h1 className="page-title">Upsolve Queue</h1>
           <div className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Prioritized by Recency, Difficulty and Attempts.
-            <div className="info-tooltip-container">
+            <div className="info-tooltip-container" tabIndex="0">
               <i className="fi fi-rr-info tooltip-icon"></i>
               <div className="tooltip-content">
                 <strong>Priority Formula Weights:</strong>

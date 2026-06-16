@@ -149,7 +149,10 @@
   line-height: 1.4;
 }
 
-.info-tooltip-container:hover .tooltip-content {
+.info-tooltip-container:hover .tooltip-content,
+.info-tooltip-container:focus .tooltip-content,
+.info-tooltip-container:active .tooltip-content,
+.info-tooltip-container:focus-within .tooltip-content {
   visibility: visible;
   opacity: 1;
   transform: translateY(0);
@@ -163,4 +166,55 @@
 
 .tooltip-content li {
   margin-bottom: 0.35rem;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .queue-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .queue-icon-wrapper {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .queue-info {
+    width: 100%;
+  }
+
+  .queue-prob-name {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .queue-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .queue-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .info-tooltip-container {
+    position: static; /* Let the tooltip position relative to the viewport/page if needed, or adjust below */
+  }
+
+  .tooltip-content {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: none;
+    font-size: 0.8rem;
+  }
 }
