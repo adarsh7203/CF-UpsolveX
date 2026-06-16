@@ -114,6 +114,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  cursor: pointer; /* Critical for iOS Safari to register clicks on a div */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tooltip-icon {
@@ -207,14 +209,26 @@
   }
   
   .info-tooltip-container {
-    position: static; /* Let the tooltip position relative to the viewport/page if needed, or adjust below */
+    position: relative;
   }
 
   .tooltip-content {
-    left: 1rem;
-    right: 1rem;
-    width: auto;
-    max-width: none;
+    left: auto;
+    right: 0;
+    transform: translateY(5px);
+    width: 90vw;
+    max-width: 330px;
     font-size: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .info-tooltip-container:hover .tooltip-content,
+  .info-tooltip-container:focus .tooltip-content,
+  .info-tooltip-container:active .tooltip-content,
+  .info-tooltip-container:focus-within .tooltip-content,
+  .tooltip-content.force-open {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
   }
 }

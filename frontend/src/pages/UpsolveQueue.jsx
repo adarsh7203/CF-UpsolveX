@@ -11,6 +11,7 @@ const UpsolveQueue = () => {
   const [maxIndex, setMaxIndex] = useState('Z');
   const [contestTypeFilter, setContestTypeFilter] = useState('all');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   useEffect(() => {
     const fetchQueueAndSettings = async () => {
@@ -102,9 +103,13 @@ const UpsolveQueue = () => {
           <h1 className="page-title">Upsolve Queue</h1>
           <div className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Prioritized by Recency, Difficulty and Attempts.
-            <div className="info-tooltip-container" tabIndex="0">
+            <div 
+              className="info-tooltip-container" 
+              tabIndex="0"
+              onClick={() => setIsTooltipOpen(!isTooltipOpen)}
+            >
               <i className="fi fi-rr-info tooltip-icon"></i>
-              <div className="tooltip-content">
+              <div className={`tooltip-content ${isTooltipOpen ? 'force-open' : ''}`}>
                 <strong>Priority Formula Weights:</strong>
                 <ul>
                   <li><strong>Recency (50%):</strong> exp(-days_since_contest / 30)</li>
