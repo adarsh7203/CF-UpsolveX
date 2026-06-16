@@ -48,22 +48,27 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # Also add all missed contests after user registration
     all_contests = await get_all_contests()
     reg_time = user_info.get("registrationTimeSeconds", 0) if user_info else 0
+    missed_contest_ids = set()
     for cf_c in all_contests:
         if cf_c.get("phase") == "FINISHED":
             start_time = cf_c.get("startTimeSeconds", 0)
             if start_time >= reg_time:
-                participated_contest_ids.add(cf_c.get("id"))
+                cid = cf_c.get("id")
+                if cid not in participated_contest_ids:
+                    missed_contest_ids.add(cid)
                 
-    if not participated_contest_ids:
-        return {"status": "success", "message": "No participated contests found"}
+    target_contest_ids = participated_contest_ids.union(missed_contest_ids)
+                
+    if not target_contest_ids:
+        return {"status": "success", "message": "No contests found"}
         
-    # 2. Pre-populate problem_status_map with ALL eligible problems from participated contests
+    # 2. Pre-populate problem_status_map with ALL eligible problems from participated and missed contests
     problem_status_map = {}
     contest_problem_counts = {}
     
     for prob in all_problems:
         cid = prob.get("contestId")
-        if cid in participated_contest_ids:
+        if cid in target_contest_ids:
             idx = prob.get("index", "")
             # Extract the letter part of the index (e.g., 'D1' -> 'D')
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
@@ -77,7 +82,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
                     "status": "not_attempted",
                     "failed_attempts": 0,
                     "solved_at": None,
-                    "is_virtual": cid not in official_contest_ids
+                    "is_virtual": False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
                 }
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
     
@@ -85,7 +90,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # Process oldest to newest
     for sub in reversed(submissions):
         cid = sub.get("contestId")
-        if cid not in participated_contest_ids:
+        if cid not in target_contest_ids:
             continue
             
         prob = sub.get("problem", {})
