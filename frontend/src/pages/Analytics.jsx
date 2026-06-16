@@ -5,6 +5,7 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
+import MultiSelectDropdown from '../components/common/MultiSelectDropdown';
 import './Analytics.css';
 
 const PIE_COLORS = ['#10b981', '#3b82f6', '#ef4444'];
@@ -74,7 +75,7 @@ const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [maxIndex, setMaxIndex] = useState('');
-  const [contestTypeFilter, setContestTypeFilter] = useState('all');
+  const [contestTypeFilters, setContestTypeFilters] = useState([]);
   const [initialSettingsLoaded, setInitialSettingsLoaded] = useState(false);
 
   useEffect(() => {
@@ -97,7 +98,8 @@ const Analytics = () => {
       if (!profile?.cf_handle || !initialSettingsLoaded) return;
       try {
         setLoading(true);
-        const res = await dashboardApi.getAnalytics(profile.cf_handle, maxIndex, contestTypeFilter);
+        const divParam = contestTypeFilters.length > 0 ? contestTypeFilters.join(',') : 'all';
+        const res = await dashboardApi.getAnalytics(profile.cf_handle, maxIndex, divParam);
         setAnalytics(res.analytics);
       } catch (err) {
         console.error("Failed to load analytics data:", err);
@@ -106,7 +108,7 @@ const Analytics = () => {
       }
     };
     fetchAnalytics();
-  }, [profile, maxIndex, contestTypeFilter, initialSettingsLoaded]);
+  }, [profile, maxIndex, contestTypeFilters, initialSettingsLoaded]);
 
   if (loading) {
     return (
@@ -158,29 +160,22 @@ const Analytics = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: '0.5rem',
-            minWidth: '180px'
+            minWidth: '220px'
           }}>
             <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>CONTEST TYPE</label>
-            <select 
-              value={contestTypeFilter} 
-              onChange={(e) => setContestTypeFilter(e.target.value)}
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                color: '#fff', 
-                border: '1px solid var(--border-color)', 
-                padding: '0.5rem', 
-                borderRadius: 'var(--radius-md)',
-                appearance: 'auto'
-              }}
-            >
-              <option style={{ background: '#1e293b', color: '#fff' }} value="all">All Types</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div1">Div. 1</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div2">Div. 2</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div1+2">Div. 1 + Div. 2</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div3">Div. 3</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div4">Div. 4</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="edu">Educational</option>
-            </select>
+            <MultiSelectDropdown 
+              options={[
+                { id: 'div1', label: 'Div. 1' },
+                { id: 'div2', label: 'Div. 2' },
+                { id: 'div1+2', label: 'Div. 1+2' },
+                { id: 'div3', label: 'Div. 3' },
+                { id: 'div4', label: 'Div. 4' },
+                { id: 'edu', label: 'Educational' }
+              ]}
+              selected={contestTypeFilters}
+              onChange={setContestTypeFilters}
+              placeholder="All Types"
+            />
           </div>
 
           <div className="queue-filter-card" style={{ 

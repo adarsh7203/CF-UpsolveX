@@ -39,25 +39,27 @@ async def get_analytics(handle: str, max_index: str = None, division: str = "all
     # Apply division filtering
     if division and division != "all":
         div_filtered = []
+        divisions = [d.strip() for d in division.split(",")]
         for p in filtered_problems:
             cname = (p.get("contests") or {}).get("name", "").lower()
             if not cname:
                 continue
             
             match = False
-            if division == "div1":
-                match = "div. 1" in cname and "div. 2" not in cname
-            elif division == "div2":
-                match = "div. 2" in cname and "div. 1" not in cname
-            elif division == "div1+2":
-                match = "div. 1 + div. 2" in cname or ("div. 1" in cname and "div. 2" in cname)
-            elif division == "div3":
-                match = "div. 3" in cname
-            elif division == "div4":
-                match = "div. 4" in cname
-            elif division == "edu":
-                match = "educational" in cname
-                
+            for div in divisions:
+                if div == "div1":
+                    if "div. 1" in cname and "div. 2" not in cname: match = True
+                elif div == "div2":
+                    if "div. 2" in cname and "div. 1" not in cname: match = True
+                elif div == "div1+2":
+                    if "div. 1 + div. 2" in cname or ("div. 1" in cname and "div. 2" in cname): match = True
+                elif div == "div3":
+                    if "div. 3" in cname: match = True
+                elif div == "div4":
+                    if "div. 4" in cname: match = True
+                elif div == "edu":
+                    if "educational" in cname: match = True
+                    
             if match:
                 div_filtered.append(p)
         filtered_problems = div_filtered

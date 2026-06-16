@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contestApi, settingsApi, userApi, clearApiCache } from '../services/api';
 import toast from 'react-hot-toast';
+import MultiSelectDropdown from '../components/common/MultiSelectDropdown';
 import './Contests.css';
 
 const Contests = () => {
@@ -13,7 +14,7 @@ const Contests = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [maxIndex, setMaxIndex] = useState('Z');
-  const [contestTypeFilter, setContestTypeFilter] = useState('all');
+  const [contestTypeFilters, setContestTypeFilters] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
@@ -124,18 +125,21 @@ const Contests = () => {
       return false;
     }
     
-    if (contestTypeFilter === 'all') return true;
+    if (contestTypeFilters.length === 0) return true;
     
     const name = (c.name || '').toLowerCase();
-    switch (contestTypeFilter) {
-      case 'div1': return name.includes('div. 1') && !name.includes('div. 2');
-      case 'div2': return name.includes('div. 2') && !name.includes('div. 1');
-      case 'div1+2': return name.includes('div. 1 + div. 2') || (name.includes('div. 1') && name.includes('div. 2'));
-      case 'div3': return name.includes('div. 3');
-      case 'div4': return name.includes('div. 4');
-      case 'edu': return name.includes('educational');
-      default: return true;
-    }
+    
+    return contestTypeFilters.some(filterType => {
+      switch (filterType) {
+        case 'div1': return name.includes('div. 1') && !name.includes('div. 2');
+        case 'div2': return name.includes('div. 2') && !name.includes('div. 1');
+        case 'div1+2': return name.includes('div. 1 + div. 2') || (name.includes('div. 1') && name.includes('div. 2'));
+        case 'div3': return name.includes('div. 3');
+        case 'div4': return name.includes('div. 4');
+        case 'edu': return name.includes('educational');
+        default: return false;
+      }
+    });
   });
 
   return (
@@ -156,29 +160,22 @@ const Contests = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: '0.5rem',
-            minWidth: '180px'
+            minWidth: '220px'
           }}>
             <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>CONTEST TYPE</label>
-            <select 
-              value={contestTypeFilter} 
-              onChange={(e) => setContestTypeFilter(e.target.value)}
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                color: '#fff', 
-                border: '1px solid var(--border-color)', 
-                padding: '0.5rem', 
-                borderRadius: 'var(--radius-md)',
-                appearance: 'auto'
-              }}
-            >
-              <option style={{ background: '#1e293b', color: '#fff' }} value="all">All Types</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div1">Div. 1</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div2">Div. 2</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div1+2">Div. 1 + Div. 2</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div3">Div. 3</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="div4">Div. 4</option>
-              <option style={{ background: '#1e293b', color: '#fff' }} value="edu">Educational</option>
-            </select>
+            <MultiSelectDropdown 
+              options={[
+                { id: 'div1', label: 'Div. 1' },
+                { id: 'div2', label: 'Div. 2' },
+                { id: 'div1+2', label: 'Div. 1+2' },
+                { id: 'div3', label: 'Div. 3' },
+                { id: 'div4', label: 'Div. 4' },
+                { id: 'edu', label: 'Educational' }
+              ]}
+              selected={contestTypeFilters}
+              onChange={setContestTypeFilters}
+              placeholder="All Types"
+            />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -354,9 +351,9 @@ const Contests = () => {
               No {activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contests found
             </h3>
             <p style={{ color: 'var(--text-muted)', margin: 0, maxWidth: '400px' }}>
-              {contestTypeFilter === 'all' 
+              {contestTypeFilters.length === 0 
                 ? `You don't have any ${activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contest history synced yet.` 
-                : `We couldn't find any ${activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contests matching your "${contestTypeFilter.toUpperCase()}" filter.`}
+                : `We couldn't find any ${activeTab === 'all' ? '' : activeTab === 'official' ? 'rated ' : activeTab === 'virtual' ? 'unrated ' : 'missed '}contests matching your selected filters.`}
             </p>
           </div>
         )}
