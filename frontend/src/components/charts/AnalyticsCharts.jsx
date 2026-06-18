@@ -1,4 +1,4 @@
-import React from 'react';
+
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const AnalyticsCharts = ({ data }) => {
   if (!data) return null;
 
-  const { completion_ratio, completion_trend, contest_performance, upsolve_progress } = data;
+  const { completion_ratio, completion_trend, contest_performance } = data;
 
   // Prepare Pie Chart Data
   const pieData = [

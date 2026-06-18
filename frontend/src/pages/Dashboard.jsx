@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [kpis, setKpis] = useState(null);
   const [recentContests, setRecentContests] = useState([]);
   const [upcomingContests, setUpcomingContests] = useState([]);
-  const [queue, setQueue] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [maxIndex, setMaxIndex] = useState('Z');
@@ -75,6 +75,7 @@ const Dashboard = () => {
       }
     };
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   const handleManualSync = async () => {

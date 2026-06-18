@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, Code2, LineChart, Target, Zap, User } from 'lucide-react';
+import { ArrowRight, Code2, LineChart, Target, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Landing.css';
 

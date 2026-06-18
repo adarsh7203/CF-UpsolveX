@@ -85,7 +85,7 @@ const Analytics = () => {
         const res = await settingsApi.getSettings(profile.cf_handle);
         setMaxIndex(res.settings?.min_notify_index || 'Z');
         setInitialSettingsLoaded(true);
-      } catch (err) {
+      } catch {
         setMaxIndex('Z');
         setInitialSettingsLoaded(true);
       }

@@ -1,8 +1,9 @@
-import React from 'react';
+
 import { ExternalLink, Target } from 'lucide-react';
 import './PriorityQueue.css';
 
-const PriorityQueue = ({ problems, handle }) => {
+const PriorityQueue = ({ queue }) => {
+  const problems = queue;
   if (!problems || problems.length === 0) {
     return (
       <div className="empty-queue">

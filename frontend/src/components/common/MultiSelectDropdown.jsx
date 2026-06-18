@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-const MultiSelectDropdown = ({ options, selected, onChange, placeholder = "Select Options" }) => {
+const MultiSelectDropdown = ({ options, selected, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
