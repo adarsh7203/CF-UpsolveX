@@ -6,44 +6,49 @@ let extensionData = null;
 
 // Initialize
 function init() {
-  detectHandle();
+  const detectedHandle = detectHandleFromDOM();
   
+  if (detectedHandle) {
+    cfHandle = detectedHandle;
+    chrome.storage.local.set({ cfHandle: cfHandle });
+  }
+
   chrome.storage.local.get(["cfHandle", "cachedData", "lastSync"], (result) => {
-    if (result.cfHandle) {
-      cfHandle = result.cfHandle;
-      
-      if (result.cachedData) {
+    cfHandle = detectedHandle || result.cfHandle;
+    
+    if (cfHandle) {
+      if (result.cachedData && result.cachedData.handle === cfHandle) {
         extensionData = result.cachedData;
         renderSidebar();
-        injectPageWidgets();
+      } else {
+        renderSidebar(true, true); // Loading state
       }
       
-      // Request fresh data if needed
+      // Request fresh data
       chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle }, (response) => {
         if (response && response.success) {
           extensionData = response.data;
-          renderSidebar(); // Re-render with fresh data
-          injectPageWidgets();
+          renderSidebar(); 
+        } else {
+          console.error("Fetch Error:", response ? response.error : "Unknown");
         }
       });
     } else {
-      // Prompt logic? Or just show a message in the sidebar
       renderSidebar(false);
     }
   });
 }
 
-// Auto-detect Codeforces handle from the top-right nav
-function detectHandle() {
+function detectHandleFromDOM() {
   const userLinks = document.querySelectorAll('.lang-chooser a[href^="/profile/"]');
   if (userLinks.length > 0) {
-    const handle = userLinks[0].getAttribute('href').split('/profile/')[1];
-    chrome.storage.local.set({ cfHandle: handle });
+    return userLinks[0].getAttribute('href').split('/profile/')[1];
   }
+  return null;
 }
 
 // Sidebar Injection
-function renderSidebar(hasHandle = true) {
+function renderSidebar(hasHandle = true, isLoading = false) {
   let sidebar = document.getElementById("cf-upsolvex-sidebar");
   let toggle = document.getElementById("cf-upsolvex-toggle");
   
@@ -68,17 +73,17 @@ function renderSidebar(hasHandle = true) {
       <div class="ux-header">
         <div>
           <h2>CF UpsolveX</h2>
-          <div class="ux-subtitle">Not Configured</div>
+          <div class="ux-subtitle">Not Logged In</div>
         </div>
       </div>
       <div style="padding: 20px; color: #aaa; font-size: 14px; text-align: center;">
-        Please set your handle in the extension popup.
+        Please login to Codeforces to see your Upsolve Queue.
       </div>
     `;
     return;
   }
 
-  if (!extensionData) {
+  if (isLoading || !extensionData) {
     sidebar.innerHTML = `
       <div class="ux-header">
         <div>
@@ -90,7 +95,7 @@ function renderSidebar(hasHandle = true) {
     return;
   }
 
-  const { queue, queue_size, stats } = extensionData;
+  const { queue, queue_size, stats, is_registered } = extensionData;
 
   // Build Stats
   const statsHtml = `
@@ -141,12 +146,22 @@ function renderSidebar(hasHandle = true) {
   queueHtml += '</div>';
 
   // Build Footer
-  const footerHtml = `
+  let footerHtml = `
     <div class="ux-footer">
       <div class="ux-footer-text">Showing ${queue.length} of ${queue_size} Pending Problems</div>
       <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn">View Full Queue &rarr;</a>
     </div>
   `;
+
+  if (is_registered === false) {
+    footerHtml += `
+      <div style="background: rgba(255, 152, 0, 0.1); padding: 15px; margin: 10px; border-radius: 8px; text-align: center; border: 1px solid rgba(255, 152, 0, 0.3);">
+        <div style="color: #ffb74d; font-size: 13px; margin-bottom: 10px; font-weight: 600;">🔥 This is a teaser queue!</div>
+        <div style="color: #bbb; font-size: 12px; margin-bottom: 12px; line-height: 1.4;">Get advanced analytics, streak tracking, and personalized nudges.</div>
+        <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn" style="background: #ff9800; color: #fff; width: 100%; border: none;">Register on CF UpsolveX</a>
+      </div>
+    `;
+  }
 
   sidebar.innerHTML = `
     <div class="ux-header">
@@ -165,130 +180,6 @@ function renderSidebar(hasHandle = true) {
     sidebar.classList.remove("open");
     toggle.classList.remove("open");
   };
-}
-
-// Widget injections on specific pages
-function injectPageWidgets() {
-  if (!extensionData) return;
-  const url = window.location.href;
-
-  // 1. Problem Page
-  if (url.includes("/problemset/problem/") || url.match(/\/contest\/\d+\/problem\//)) {
-    injectProblemWidget();
-  }
-  
-  // 2. Contest Page
-  if (url.match(/\/contest\/\d+$/)) {
-    // Only base contest page, not specific problems or standings
-    injectContestWidget();
-  }
-  
-  // 3. Profile Page
-  if (url.includes("/profile/")) {
-    injectProfileWidget();
-  }
-}
-
-function injectProblemWidget() {
-  const match = window.location.href.match(/(?:problemset\/problem|contest)\/(\d+)\/(?:problem\/)?([A-Z0-9]+)/i);
-  if (!match) return;
-  
-  const cId = parseInt(match[1]);
-  const pIdx = match[2];
-  
-  // Check if problem is in queue
-  const problem = extensionData.queue.find(p => p.contest_id === cId && p.problem_index === pIdx);
-  
-  const sidebarContent = document.querySelector("#sidebar");
-  if (!sidebarContent || document.getElementById("ux-problem-widget")) return;
-  
-  const widget = document.createElement("div");
-  widget.id = "ux-problem-widget";
-  widget.className = "ux-widget roundbox sidebox";
-  
-  if (problem) {
-    widget.innerHTML = `
-      <h3>CF UpsolveX</h3>
-      <div class="ux-widget-row">
-        <span class="ux-widget-label">Priority Score</span>
-        <span class="ux-widget-val" style="color: #ff5252;">${problem.priority_score}/10</span>
-      </div>
-      <div class="ux-widget-row">
-        <span class="ux-widget-label">Status</span>
-        <span class="ux-widget-val">Pending</span>
-      </div>
-      <div style="margin-top: 15px;">
-        <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn" style="padding: 6px; font-size: 12px;">Open UpsolveX Queue</a>
-      </div>
-    `;
-  } else {
-    widget.innerHTML = `
-      <h3>CF UpsolveX</h3>
-      <div class="ux-widget-row" style="justify-content: center; color: #4caf50;">
-        Not in top 10 queue!
-      </div>
-    `;
-  }
-  
-  sidebarContent.insertBefore(widget, sidebarContent.firstChild);
-}
-
-function injectContestWidget() {
-  const sidebarContent = document.querySelector("#sidebar");
-  if (!sidebarContent || document.getElementById("ux-contest-widget")) return;
-  
-  const widget = document.createElement("div");
-  widget.id = "ux-contest-widget";
-  widget.className = "ux-widget roundbox sidebox";
-  
-  widget.innerHTML = `
-    <h3>CF UpsolveX</h3>
-    <div class="ux-widget-row">
-      <span class="ux-widget-label">Overall Completion</span>
-      <span class="ux-widget-val">${extensionData.stats.completion_rate}%</span>
-    </div>
-    <div style="margin-top: 15px;">
-      <a href="${MAIN_APP_URL}/contests" target="_blank" class="ux-btn" style="padding: 6px; font-size: 12px;">Open Contest Dashboard</a>
-    </div>
-  `;
-  
-  sidebarContent.insertBefore(widget, sidebarContent.firstChild);
-}
-
-function injectProfileWidget() {
-  const profileMatch = window.location.href.match(/\/profile\/([^\/]+)/);
-  if (!profileMatch || profileMatch[1].toLowerCase() !== cfHandle.toLowerCase()) return;
-  
-  const infoSection = document.querySelector(".info");
-  if (!infoSection || document.getElementById("ux-profile-widget")) return;
-  
-  const widget = document.createElement("div");
-  widget.id = "ux-profile-widget";
-  widget.className = "ux-widget";
-  widget.style.marginTop = "20px";
-  
-  widget.innerHTML = `
-    <h3>CF UpsolveX Snapshot</h3>
-    <div style="display: flex; gap: 20px;">
-      <div>
-        <div class="ux-widget-label">Pending Queue</div>
-        <div class="ux-widget-val" style="font-size: 18px; color: #ff5252;">${extensionData.stats.pending_upsolves}</div>
-      </div>
-      <div>
-        <div class="ux-widget-label">Completion</div>
-        <div class="ux-widget-val" style="font-size: 18px; color: #4a90e2;">${extensionData.stats.completion_rate}%</div>
-      </div>
-      <div>
-        <div class="ux-widget-label">Current Streak</div>
-        <div class="ux-widget-val" style="font-size: 18px; color: #ff9800;">${extensionData.stats.current_streak} Days</div>
-      </div>
-    </div>
-    <div style="margin-top: 15px;">
-      <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn" style="width: auto; display: inline-block; padding: 6px 15px;">Open Full Dashboard</a>
-    </div>
-  `;
-  
-  infoSection.appendChild(widget);
 }
 
 // Run!

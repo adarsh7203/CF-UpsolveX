@@ -6,8 +6,7 @@
   "permissions": ["storage", "alarms"],
   "host_permissions": [
     "*://*.codeforces.com/*",
-    "http://localhost:8000/*",
-    "https://cfupsolvex-api.com/*"
+    "https://cf-upsolvex.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -19,9 +18,5 @@
       "js": ["content.js"],
       "run_at": "document_end"
     }
-  ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "CF UpsolveX Settings"
-  }
+  ]
 }

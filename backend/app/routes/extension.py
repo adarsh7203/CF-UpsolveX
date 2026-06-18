@@ -25,10 +25,11 @@ async def get_extension_data(handle: str):
     user_rating = cf_info.get("rating") if cf_info else None
     
     # Get all problem statuses for this user
-    problems_res = supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).execute()
+    from app.db.supabase_client import fetch_all
+    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("is_virtual", [True, False]))
     
     # Filter problems based on user's notification index settings
-    filtered_all = filter_problems_by_index(problems_res.data, min_notify_index)
+    filtered_all = filter_problems_by_index(problems_data, min_notify_index)
     
     # Calculate KPIs
     kpis = calculate_kpis(filtered_all)
