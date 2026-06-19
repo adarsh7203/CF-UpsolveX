@@ -6,7 +6,7 @@ from app.services.auth_middleware import verify_token
 router = APIRouter()
 
 @router.get("/{handle}")
-async def get_dashboard(handle: str, user=Depends(verify_token)):
+def get_dashboard(handle: str, user=Depends(verify_token)):
     """KPI card metrics."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")

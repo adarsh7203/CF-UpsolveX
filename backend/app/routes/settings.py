@@ -5,7 +5,7 @@ from app.db.supabase_client import supabase
 router = APIRouter()
 
 @router.get("/{handle}")
-async def get_settings(handle: str):
+def get_settings(handle: str):
     """Retrieve user settings."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -19,7 +19,7 @@ async def get_settings(handle: str):
 from app.services.processor import sync_user_data
 
 @router.put("/{handle}")
-async def update_settings(handle: str, settings: UserBase, background_tasks: BackgroundTasks):
+def update_settings(handle: str, settings: UserBase, background_tasks: BackgroundTasks):
     """Update user settings (handle, email, preferences)."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")

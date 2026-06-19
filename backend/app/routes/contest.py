@@ -6,7 +6,7 @@ from app.services.auth_middleware import verify_token
 router = APIRouter()
 
 @router.get("/{handle}")
-async def get_contests(handle: str, user=Depends(verify_token)):
+def get_contests(handle: str, user=Depends(verify_token)):
     """Full contest history with per-problem status."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -31,7 +31,7 @@ async def get_contests(handle: str, user=Depends(verify_token)):
     return {"handle": handle, "contests": results}
 
 @router.get("/{handle}/{contest_id}")
-async def get_contest_detail(handle: str, contest_id: int, user=Depends(verify_token)):
+def get_contest_detail(handle: str, contest_id: int, user=Depends(verify_token)):
     """Detail view for a single contest."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")

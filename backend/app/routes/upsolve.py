@@ -7,7 +7,7 @@ import dateutil.parser
 router = APIRouter()
 
 @router.get("/{handle}")
-async def get_upsolve_queue(handle: str):
+def get_upsolve_queue(handle: str):
     """Priority-ordered upsolve queue."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")

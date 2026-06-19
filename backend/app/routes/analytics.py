@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional
 from app.db.supabase_client import supabase
 from app.services.analytics_service import generate_analytics_data
 from app.services.auth_middleware import verify_token
@@ -6,7 +7,7 @@ from app.services.auth_middleware import verify_token
 router = APIRouter()
 
 @router.get("/{handle}")
-async def get_analytics(handle: str, max_index: str = None, division: str = "all", user=Depends(verify_token)):
+def get_analytics(handle: str, max_index: Optional[str] = None, division: Optional[str] = "all", user=Depends(verify_token)):
     """All graph data including completion trend."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
