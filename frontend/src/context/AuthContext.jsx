@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
-import { fetchUserInfo } from '../services/codeforces';
 
 const AuthContext = createContext({});
 
@@ -20,36 +19,9 @@ export const AuthProvider = ({ children }) => {
       
       if (!error && data) {
         let fullProfile = { ...data };
-        if (data.cf_handle) {
-          const cfInfo = await fetchUserInfo(data.cf_handle);
-          if (cfInfo) {
-            fullProfile.rating = cfInfo.rating;
-            fullProfile.rank = cfInfo.rank;
-            fullProfile.avatar = cfInfo.titlePhoto || cfInfo.avatar;
-            fullProfile.cf_info = cfInfo; // Store full Codeforces profile details
-            localStorage.setItem(`cf_profile_${data.cf_handle}`, JSON.stringify(cfInfo));
-          } else {
-            // Fallback to localStorage if API is down
-            const cachedInfoStr = localStorage.getItem(`cf_profile_${data.cf_handle}`);
-            if (cachedInfoStr) {
-              try {
-                const cachedInfo = JSON.parse(cachedInfoStr);
-                fullProfile.rating = cachedInfo.rating;
-                fullProfile.rank = cachedInfo.rank;
-                fullProfile.avatar = cachedInfo.titlePhoto || cachedInfo.avatar;
-                fullProfile.cf_info = cachedInfo;
-              } catch (e) {
-                console.error("Failed to parse cached profile", e);
-                // Worst case fallback to Supabase fields
-                fullProfile.rating = data.rating;
-                fullProfile.rank = data.rank;
-              }
-            } else {
-              // Worst case fallback to Supabase fields
-              fullProfile.rating = data.rating;
-              fullProfile.rank = data.rank;
-            }
-          }
+        if (data.cf_info) {
+          fullProfile.avatar = data.cf_info.titlePhoto || data.cf_info.avatar;
+          // rating and rank are already at top-level from backend updates
         }
         setProfile(fullProfile);
       }

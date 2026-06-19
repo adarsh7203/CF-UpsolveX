@@ -23,15 +23,16 @@ async def sync_user_data(user_id: str, cf_handle: str):
     user_info = await get_user_info(cf_handle)
     all_problems = await get_all_problems()
     
-    # Update user's current rating and rank in the database
+    # Update user's current rating, rank, and full cf_info in the database
     if user_info:
         try:
             supabase.table("users").update({
                 "rating": user_info.get("rating"),
-                "rank": user_info.get("rank")
+                "rank": user_info.get("rank"),
+                "cf_info": user_info
             }).eq("id", user_id).execute()
         except Exception as e:
-            print(f"Failed to update user rating/rank: {e}")
+            print(f"Failed to update user cf_info: {e}")
             pass
     
     # 1. Determine participated contests

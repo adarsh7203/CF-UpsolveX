@@ -1,90 +1,94 @@
 /* CF UpsolveX Extension Styles */
 :root {
-  --ux-bg: #121212;
-  --ux-bg-secondary: #1e1e1e;
-  --ux-bg-hover: #2c2c2c;
-  --ux-border: #333333;
-  --ux-text-main: #ffffff;
-  --ux-text-muted: #aaaaaa;
-  --ux-primary: #4a90e2;
-  --ux-primary-hover: #357abd;
-  --ux-high: #ff5252;
-  --ux-med: #ff9800;
-  --ux-low: #2196f3;
+  --ux-bg: #0d1117;
+  --ux-bg-secondary: #161b22;
+  --ux-bg-hover: #21262d;
+  --ux-border: #30363d;
+  --ux-text-main: #c9d1d9;
+  --ux-text-muted: #8b949e;
+  --ux-primary: #58a6ff;
+  --ux-primary-hover: #3182ce;
+  --ux-high: #ff7b72;
+  --ux-med: #d2a8ff;
+  --ux-low: #79c0ff;
+  --ux-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Sidebar Container */
 #cf-upsolvex-sidebar {
   position: fixed;
-  top: 0;
-  right: -320px; /* Hidden initially */
-  width: 320px;
-  height: 100vh;
-  background-color: var(--ux-bg);
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+  top: 15px;
+  bottom: 15px;
+  right: -360px; /* Hidden initially */
+  width: 340px;
+  height: calc(100vh - 30px);
+  background: var(--ux-bg);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.8), inset 1px 0 0 rgba(255,255,255,0.05);
   z-index: 999999;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   display: flex;
   flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--ux-font);
   color: var(--ux-text-main);
   box-sizing: border-box;
-  border-left: 1px solid var(--ux-border);
+  border: 1px solid var(--ux-border);
+  border-right: none;
+  border-radius: 24px 0 0 24px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 #cf-upsolvex-sidebar.open {
   right: 0;
 }
 
-/* Toggle Button */
-#cf-upsolvex-toggle {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background-color: var(--ux-primary);
-  color: #fff;
-  padding: 12px 8px;
-  border-radius: 8px 0 0 8px;
-  cursor: pointer;
-  z-index: 999998;
-  font-weight: 600;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.3);
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  letter-spacing: 1px;
-}
-#cf-upsolvex-toggle.open {
-  right: 320px;
-}
+
+
 
 /* Sidebar Header */
 .ux-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--ux-border);
+  padding: 24px 24px 16px 24px;
+  background: linear-gradient(to bottom, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0));
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .ux-header h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ux-text-main);
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  background: -webkit-linear-gradient(0deg, #fff, var(--ux-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .ux-header .ux-subtitle {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--ux-text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
+  letter-spacing: 2px;
+  font-weight: 600;
 }
 .ux-close-btn {
   cursor: pointer;
   color: var(--ux-text-muted);
-  font-size: 20px;
+  font-size: 24px;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ux-bg-secondary);
 }
 .ux-close-btn:hover {
-  color: var(--ux-text-main);
+  color: #fff;
+  background: var(--ux-border);
+  transform: rotate(90deg);
 }
 
 /* Stats Widget */
@@ -92,54 +96,68 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  padding: 20px;
-  border-bottom: 1px solid var(--ux-border);
-  background-color: var(--ux-bg-secondary);
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background-color: var(--ux-bg);
 }
 .ux-stat-box {
-  background: var(--ux-bg);
+  background: var(--ux-bg-secondary);
   border: 1px solid var(--ux-border);
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 14px;
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ux-stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.1);
 }
 .ux-stat-value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--ux-primary);
+  text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
 }
 .ux-stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ux-text-muted);
-  margin-top: 4px;
-  text-transform: uppercase;
+  margin-top: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 /* Queue Section */
 .ux-queue-container {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
+  padding: 8px 12px;
   margin: 0;
 }
 .ux-queue-container::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 .ux-queue-container::-webkit-scrollbar-thumb {
   background: var(--ux-border);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 .ux-queue-item {
   display: flex;
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--ux-border);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: rgba(22, 27, 34, 0.4);
+  border: 1px solid transparent;
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   align-items: center;
 }
 .ux-queue-item:hover {
-  background-color: var(--ux-bg-hover);
+  background: var(--ux-bg-secondary);
+  border-color: rgba(88, 166, 255, 0.2);
+  transform: translateX(4px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 .ux-item-details {
   flex: 1;
@@ -147,8 +165,9 @@
 .ux-item-title {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: #fff;
+  line-height: 1.3;
 }
 .ux-item-meta {
   font-size: 12px;
@@ -157,82 +176,60 @@
 
 /* Badges */
 .ux-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 .ux-badge-high {
-  background-color: rgba(255, 82, 82, 0.15);
+  background: rgba(255, 123, 114, 0.1);
   color: var(--ux-high);
+  border: 1px solid rgba(255, 123, 114, 0.2);
+  box-shadow: 0 0 10px rgba(255, 123, 114, 0.1);
 }
 .ux-badge-med {
-  background-color: rgba(255, 152, 0, 0.15);
+  background: rgba(210, 168, 255, 0.1);
   color: var(--ux-med);
+  border: 1px solid rgba(210, 168, 255, 0.2);
 }
 .ux-badge-low {
-  background-color: rgba(33, 150, 243, 0.15);
+  background: rgba(121, 192, 255, 0.1);
   color: var(--ux-low);
+  border: 1px solid rgba(121, 192, 255, 0.2);
 }
 
 /* Footer / CTA */
 .ux-footer {
-  padding: 20px;
-  border-top: 1px solid var(--ux-border);
-  background-color: var(--ux-bg-secondary);
+  padding: 20px 24px;
+  background: linear-gradient(to top, rgba(13, 17, 23, 1), rgba(22, 27, 34, 0.8));
   text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 .ux-footer-text {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ux-text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  font-weight: 500;
 }
 .ux-btn {
   display: block;
   width: 100%;
-  padding: 10px;
-  background-color: var(--ux-primary);
+  padding: 12px;
+  background: linear-gradient(135deg, var(--ux-primary), #3b82f6);
   color: white !important;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
   text-align: center;
-  transition: background-color 0.2s;
-  box-sizing: border-box;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  border: none;
 }
 .ux-btn:hover {
-  background-color: var(--ux-primary-hover);
-}
-
-/* Page Widgets (Problem / Contest / Profile) */
-.ux-widget {
-  background-color: var(--ux-bg);
-  border: 1px solid var(--ux-border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-  color: var(--ux-text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.ux-widget h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: var(--ux-primary);
-  border-bottom: 1px solid var(--ux-border);
-  padding-bottom: 8px;
-}
-.ux-widget-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-.ux-widget-label {
-  color: var(--ux-text-muted);
-}
-.ux-widget-val {
-  font-weight: 600;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }

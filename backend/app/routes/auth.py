@@ -37,6 +37,17 @@ async def signup(user: UserSignup):
         "include_virtual": False
     }
     
+    # Try to fetch initial CF info so the user has immediate data
+    try:
+        from app.services.codeforces import get_user_info
+        cf_info = await get_user_info(user.cf_handle)
+        if cf_info:
+            new_user["cf_info"] = cf_info
+            new_user["rating"] = cf_info.get("rating")
+            new_user["rank"] = cf_info.get("rank")
+    except Exception as e:
+        print(f"Failed to fetch initial CF info: {e}")
+    
     try:
         supabase.table("users").insert(new_user).execute()
     except Exception as e:

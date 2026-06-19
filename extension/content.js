@@ -11,12 +11,8 @@ function init() {
   if (detectedHandle) {
     cfHandle = detectedHandle;
     chrome.storage.local.set({ cfHandle: cfHandle });
-  }
-
-  chrome.storage.local.get(["cfHandle", "cachedData", "lastSync"], (result) => {
-    cfHandle = detectedHandle || result.cfHandle;
     
-    if (cfHandle) {
+    chrome.storage.local.get(["cachedData", "lastSync"], (result) => {
       if (result.cachedData && result.cachedData.handle === cfHandle) {
         extensionData = result.cachedData;
         renderSidebar();
@@ -33,10 +29,13 @@ function init() {
           console.error("Fetch Error:", response ? response.error : "Unknown");
         }
       });
-    } else {
-      renderSidebar(false);
-    }
-  });
+    });
+  } else {
+    // User is logged out
+    cfHandle = null;
+    chrome.storage.local.remove(["cfHandle", "cachedData", "lastSync"]);
+    renderSidebar(false); // Show Not Logged In state
+  }
 }
 
 function detectHandleFromDOM() {
@@ -50,22 +49,26 @@ function detectHandleFromDOM() {
 // Sidebar Injection
 function renderSidebar(hasHandle = true, isLoading = false) {
   let sidebar = document.getElementById("cf-upsolvex-sidebar");
-  let toggle = document.getElementById("cf-upsolvex-toggle");
-  
   if (!sidebar) {
     sidebar = document.createElement("div");
     sidebar.id = "cf-upsolvex-sidebar";
-    
-    toggle = document.createElement("div");
-    toggle.id = "cf-upsolvex-toggle";
-    toggle.textContent = "UpsolveX";
-    toggle.onclick = () => {
-      sidebar.classList.toggle("open");
-      toggle.classList.toggle("open");
-    };
-    
     document.body.appendChild(sidebar);
-    document.body.appendChild(toggle);
+
+    // Inject Navbar Button
+    injectNavbarButton(() => {
+      sidebar.classList.toggle("open");
+    });
+
+    // Close on click outside
+    document.addEventListener("click", (e) => {
+      const isClickInsideSidebar = sidebar.contains(e.target);
+      const navBtn = document.getElementById("ux-nav-btn");
+      const isClickOnNavBtn = navBtn ? navBtn.contains(e.target) : false;
+      
+      if (!isClickInsideSidebar && !isClickOnNavBtn && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+      }
+    });
   }
 
   if (!hasHandle) {
@@ -75,11 +78,20 @@ function renderSidebar(hasHandle = true, isLoading = false) {
           <h2>CF UpsolveX</h2>
           <div class="ux-subtitle">Not Logged In</div>
         </div>
+        <div class="ux-close-btn" id="ux-close">&times;</div>
       </div>
-      <div style="padding: 20px; color: #aaa; font-size: 14px; text-align: center;">
-        Please login to Codeforces to see your Upsolve Queue.
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; color: var(--ux-text-muted);">
+        <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.5;">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <div style="font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px;">Authentication Required</div>
+        <div style="font-size: 13px; line-height: 1.5;">Please login to your Codeforces account to see your Upsolve Queue.</div>
       </div>
     `;
+    document.getElementById("ux-close").onclick = () => {
+      sidebar.classList.remove("open");
+    };
     return;
   }
 
@@ -130,11 +142,29 @@ function renderSidebar(hasHandle = true, isLoading = false) {
       const badgeIcon = p.priority_score > 7 ? '🔥' : '⭐';
       const rating = p.problem_rating ? p.problem_rating : 'N/A';
       
+      let contestName = "";
+      if (p.contests && p.contests.name) contestName = p.contests.name;
+      else if (p.contest_name) contestName = p.contest_name;
+
+      let divBadgeText = "";
+      if (contestName) {
+        const lowerName = contestName.toLowerCase();
+        if (lowerName.includes("div. 1 + div. 2") || lowerName.includes("div. 1 + 2") || lowerName.includes("div 1 + div 2")) divBadgeText = "Div. 1+2";
+        else if (lowerName.includes("div. 1") || lowerName.includes("div 1")) divBadgeText = "Div. 1";
+        else if (lowerName.includes("div. 2") || lowerName.includes("div 2")) divBadgeText = "Div. 2";
+        else if (lowerName.includes("div. 3") || lowerName.includes("div 3")) divBadgeText = "Div. 3";
+        else if (lowerName.includes("div. 4") || lowerName.includes("div 4")) divBadgeText = "Div. 4";
+        else if (lowerName.includes("educational")) divBadgeText = "Edu";
+        else if (lowerName.includes("global")) divBadgeText = "Global";
+      }
+
+      const divBadgeHtml = divBadgeText ? `<span style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-size: 10px; font-weight: 600; color: #8b949e; border: 1px solid rgba(255,255,255,0.1);">${divBadgeText}</span>` : "";
+
       queueHtml += `
         <a href="/problemset/problem/${p.contest_id}/${p.problem_index}" class="ux-queue-item">
           <div class="ux-item-details">
             <div class="ux-item-title">${p.contest_id}${p.problem_index} - ${p.problem_name || 'Problem'}</div>
-            <div class="ux-item-meta">Rating: ${rating}</div>
+            <div class="ux-item-meta">Rating: ${rating}${divBadgeHtml}</div>
           </div>
           <div class="ux-badge ${badgeClass}">${badgeIcon} ${p.priority_score}</div>
         </a>
@@ -167,7 +197,7 @@ function renderSidebar(hasHandle = true, isLoading = false) {
     <div class="ux-header">
       <div>
         <h2>CF UpsolveX</h2>
-        <div class="ux-subtitle">Your Next Problems</div>
+        <div class="ux-subtitle">TRACK • UPSOLVE • IMPROVE</div>
       </div>
       <div class="ux-close-btn" id="ux-close">&times;</div>
     </div>
@@ -178,8 +208,64 @@ function renderSidebar(hasHandle = true, isLoading = false) {
 
   document.getElementById("ux-close").onclick = () => {
     sidebar.classList.remove("open");
-    toggle.classList.remove("open");
   };
+}
+
+// Inject button into Codeforces top navbar
+function injectNavbarButton(toggleFn) {
+  const menuList = document.querySelector(".menu-list-container ul, .menu-list");
+  if (!menuList) return;
+  
+  if (document.getElementById("ux-nav-btn")) return;
+
+  const li = document.createElement("li");
+  li.id = "ux-nav-btn";
+  
+  const a = document.createElement("a");
+  a.href = "#";
+  a.textContent = "CF UpsolveX";
+  
+  // Compact button styling directly on 'a' to avoid span clipping
+  a.style.color = "#58a6ff"; 
+  a.style.fontWeight = "bold";
+  a.style.border = "1px solid rgba(88, 166, 255, 0.5)";
+  a.style.borderRadius = "4px";
+  a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
+  
+  // Flexbox for perfect text centering inside the border
+  a.style.display = "inline-flex";
+  a.style.alignItems = "center";
+  a.style.justifyContent = "center";
+  a.style.height = "26px";
+  a.style.padding = "0 10px";
+  a.style.margin = "0 0 0 4px";
+  
+  // Overrides to prevent pushing down the navbar
+  a.style.lineHeight = "normal";
+  a.style.boxSizing = "border-box";
+  
+  // Nudge it up visually to make it equidistant from top and bottom navbar borders
+  a.style.position = "relative";
+  a.style.top = "-3px"; 
+  
+  a.style.transition = "all 0.2s ease";
+  
+  a.onmouseover = () => {
+    a.style.backgroundColor = "rgba(88, 166, 255, 0.2)";
+    a.style.border = "1px solid rgba(88, 166, 255, 0.8)";
+  };
+  a.onmouseout = () => {
+    a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
+    a.style.border = "1px solid rgba(88, 166, 255, 0.5)";
+  };
+  
+  a.onclick = (e) => {
+    e.preventDefault();
+    toggleFn();
+  };
+  
+  li.appendChild(a);
+  menuList.appendChild(li);
 }
 
 // Run!
