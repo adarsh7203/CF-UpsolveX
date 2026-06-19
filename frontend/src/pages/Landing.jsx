@@ -39,8 +39,8 @@ const Landing = () => {
           <span className="font-bold text-xl">CF UpsolveX</span>
         </div>
         <div className="nav-actions">
-          <Link to="/auth" className="btn-ghost">Login</Link>
-          <Link to="/auth" className="btn-primary">Get Started</Link>
+          <Link to="/auth" state={{ isLogin: true }} className="btn-ghost">Login</Link>
+          <Link to="/auth" state={{ isLogin: false }} className="btn-primary">Sign Up</Link>
         </div>
       </nav>
 
@@ -61,8 +61,8 @@ const Landing = () => {
           </p>
 
           <div className="hero-cta animate-slide-up stagger-4">
-            <Link to="/auth" className="btn-primary btn-large">
-              Start Upsolving <ArrowRight size={20} />
+            <Link to="/auth"  className="btn-primary btn-lg">
+              Start Upsolving <ArrowRight size={20} className="ml-2" />
             </Link>
           </div>
         </div>
