@@ -13,6 +13,7 @@ class UserSignup(BaseModel):
     email: EmailStr
     password: str
     cf_handle: str
+    verification_problem: str = "4A"
 
 class UserLogin(BaseModel):
     email: EmailStr

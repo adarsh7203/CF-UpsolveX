@@ -14,6 +14,15 @@ async def signup(user: UserSignup):
     if existing.data:
         raise HTTPException(status_code=400, detail="User with this handle already exists")
         
+    # Verify Handle Ownership
+    from app.services.codeforces import verify_user_handle
+    is_verified = await verify_user_handle(user.cf_handle, user.verification_problem)
+    if not is_verified:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"VERIFICATION_FAILED: Please verify ownership by submitting any invalid code (Compilation Error) to problem {user.verification_problem} on Codeforces within the last 10 minutes, then click Signup again."
+        )
+        
     try:
         # Create user via admin API to avoid polluting the global client's JWT
         auth_response = supabase.auth.admin.create_user({

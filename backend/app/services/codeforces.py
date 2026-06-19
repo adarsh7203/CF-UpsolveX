@@ -55,7 +55,40 @@ async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any
             res = data.get("result", [])
             set_cached(cache_key, res)
             return res
-        return []
+async def verify_user_handle(handle: str, verification_problem: str = "4A") -> bool:
+    """Verifies handle ownership by checking for a recent Compilation Error on a specific problem."""
+    # Parse verification_problem (e.g. "4A" -> contest_id=4, index="A")
+    import re
+    match = re.match(r"^(\d+)([A-Z]\d*)$", verification_problem)
+    if not match:
+        return False
+        
+    req_contest_id = int(match.group(1))
+    req_index = match.group(2)
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{CF_API_BASE}/user.status", params={"handle": handle, "from": 1, "count": 5, "lang": "en"})
+        if response.status_code != 200:
+            return False
+            
+        data = response.json()
+        if data.get("status") != "OK":
+            return False
+            
+        submissions = data.get("result", [])
+        current_time = int(time.time())
+        
+        for sub in submissions:
+            # Check if submission is within last 10 minutes (600 seconds)
+            if current_time - sub.get("creationTimeSeconds", 0) > 600:
+                continue
+                
+            problem = sub.get("problem", {})
+            if problem.get("contestId") == req_contest_id and problem.get("index") == req_index:
+                if sub.get("verdict") == "COMPILATION_ERROR":
+                    return True
+                    
+        return False
 
 async def get_all_contests() -> List[Dict[str, Any]]:
     """Fetch all contests to get names and times."""
