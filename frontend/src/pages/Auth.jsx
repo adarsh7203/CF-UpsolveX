@@ -289,9 +289,9 @@ const Auth = () => {
               </div>
             </div>
 
-            {error && error.includes("VERIFICATION_FAILED") && (
-              <div className="auth-error">
-                {error.replace("VERIFICATION_FAILED:", "")}
+            {error && (
+              <div className="auth-error" style={{ fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                {error.replace("VERIFICATION_FAILED:", "").trim()}
               </div>
             )}
 
