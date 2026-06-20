@@ -19,7 +19,7 @@ async def get_extension_data(handle: str, max_index: str = None):
         
     user_id = user_res.data[0]["id"]
     
-    if max_index and max_index != 'Z':
+    if max_index:
         min_notify_index = max_index.upper()
     else:
         min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()

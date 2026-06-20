@@ -202,16 +202,18 @@ function renderSidebar(hasHandle = true, isLoading = false) {
     <div class="ux-header">
       <div>
         <h2>CF UpsolveX</h2>
-        <div class="ux-subtitle">TRACK • UPSOLVE • IMPROVE</div>
+        <div class="ux-subtitle" style="white-space: nowrap; font-size: 10px; letter-spacing: 0.5px;">TRACK • UPSOLVE • IMPROVE</div>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
-        <select id="ux-max-index-select" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 4px; font-size: 11px; outline: none; cursor: pointer;">
-          <option value="A" ${currentMaxIndex === 'A' ? 'selected' : ''} style="color: #000;">Max: A</option>
-          <option value="B" ${currentMaxIndex === 'B' ? 'selected' : ''} style="color: #000;">Max: B</option>
-          <option value="C" ${currentMaxIndex === 'C' ? 'selected' : ''} style="color: #000;">Max: C</option>
-          <option value="D" ${currentMaxIndex === 'D' ? 'selected' : ''} style="color: #000;">Max: D</option>
-          <option value="E" ${currentMaxIndex === 'E' ? 'selected' : ''} style="color: #000;">Max: E</option>
-          <option value="Z" ${currentMaxIndex === 'Z' ? 'selected' : ''} style="color: #000;">Max: Any</option>
+        <select id="ux-max-index-select" style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; padding: 4px 6px; font-size: 12px; font-weight: 500; outline: none; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px);">
+          <option value="A" ${currentMaxIndex === 'A' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to A</option>
+          <option value="B" ${currentMaxIndex === 'B' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to B</option>
+          <option value="C" ${currentMaxIndex === 'C' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to C</option>
+          <option value="D" ${currentMaxIndex === 'D' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to D</option>
+          <option value="E" ${currentMaxIndex === 'E' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to E</option>
+          <option value="F" ${currentMaxIndex === 'F' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to F</option>
+          <option value="G" ${currentMaxIndex === 'G' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to G</option>
+          <option value="Z" ${currentMaxIndex === 'Z' ? 'selected' : ''} style="background: #0f172a; color: #fff;">All Problems</option>
         </select>
         <div class="ux-close-btn" id="ux-close">&times;</div>
       </div>
