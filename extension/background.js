@@ -51,7 +51,7 @@ async function syncQueueData() {
 async function fetchData(handle, maxIndex) {
   try {
     let url = `${API_BASE}/extension/queue/${handle}`;
-    if (maxIndex && maxIndex !== 'Z') {
+    if (maxIndex) {
       url += `?max_index=${maxIndex}`;
     }
     const response = await fetch(url);
