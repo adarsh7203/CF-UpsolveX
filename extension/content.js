@@ -3,6 +3,7 @@ const MAIN_APP_URL = "https://cfupsolvex.netlify.app"; // Update to production U
 
 let cfHandle = null;
 let extensionData = null;
+let currentMaxIndex = 'Z';
 
 // Initialize
 function init() {
@@ -12,7 +13,11 @@ function init() {
     cfHandle = detectedHandle;
     chrome.storage.local.set({ cfHandle: cfHandle });
     
-    chrome.storage.local.get(["cachedData", "lastSync"], (result) => {
+    chrome.storage.local.get(["cachedData", "lastSync", "uxMaxIndex"], (result) => {
+      if (result.uxMaxIndex) {
+        currentMaxIndex = result.uxMaxIndex;
+      }
+      
       if (result.cachedData && result.cachedData.handle === cfHandle) {
         extensionData = result.cachedData;
         renderSidebar();
@@ -21,7 +26,7 @@ function init() {
       }
       
       // Request fresh data
-      chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle }, (response) => {
+      chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle, maxIndex: currentMaxIndex }, (response) => {
         if (response && response.success) {
           extensionData = response.data;
           renderSidebar(); 
@@ -199,7 +204,17 @@ function renderSidebar(hasHandle = true, isLoading = false) {
         <h2>CF UpsolveX</h2>
         <div class="ux-subtitle">TRACK • UPSOLVE • IMPROVE</div>
       </div>
-      <div class="ux-close-btn" id="ux-close">&times;</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <select id="ux-max-index-select" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 4px; font-size: 11px; outline: none; cursor: pointer;">
+          <option value="A" ${currentMaxIndex === 'A' ? 'selected' : ''} style="color: #000;">Max: A</option>
+          <option value="B" ${currentMaxIndex === 'B' ? 'selected' : ''} style="color: #000;">Max: B</option>
+          <option value="C" ${currentMaxIndex === 'C' ? 'selected' : ''} style="color: #000;">Max: C</option>
+          <option value="D" ${currentMaxIndex === 'D' ? 'selected' : ''} style="color: #000;">Max: D</option>
+          <option value="E" ${currentMaxIndex === 'E' ? 'selected' : ''} style="color: #000;">Max: E</option>
+          <option value="Z" ${currentMaxIndex === 'Z' ? 'selected' : ''} style="color: #000;">Max: Any</option>
+        </select>
+        <div class="ux-close-btn" id="ux-close">&times;</div>
+      </div>
     </div>
     ${statsHtml}
     ${queueHtml}
@@ -209,6 +224,23 @@ function renderSidebar(hasHandle = true, isLoading = false) {
   document.getElementById("ux-close").onclick = () => {
     sidebar.classList.remove("open");
   };
+
+  const maxIndexSelect = document.getElementById("ux-max-index-select");
+  if (maxIndexSelect) {
+    maxIndexSelect.addEventListener('change', (e) => {
+      currentMaxIndex = e.target.value;
+      chrome.storage.local.set({ uxMaxIndex: currentMaxIndex });
+      renderSidebar(true, true); // Show loading state
+      chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle, maxIndex: currentMaxIndex }, (response) => {
+        if (response && response.success) {
+          extensionData = response.data;
+          renderSidebar(); 
+        } else {
+          console.error("Fetch Error after index change:", response ? response.error : "Unknown");
+        }
+      });
+    });
+  }
 }
 
 // Inject button into Codeforces top navbar

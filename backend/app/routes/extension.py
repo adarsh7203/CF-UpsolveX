@@ -8,7 +8,7 @@ import dateutil.parser
 router = APIRouter()
 
 @router.get("/queue/{handle}")
-async def get_extension_data(handle: str):
+async def get_extension_data(handle: str, max_index: str = None):
     """Unauthenticated endpoint to fetch top 10 queue and stats for the Chrome Extension."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -18,7 +18,11 @@ async def get_extension_data(handle: str):
         raise HTTPException(status_code=404, detail="User not found")
         
     user_id = user_res.data[0]["id"]
-    min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
+    
+    if max_index and max_index != 'Z':
+        min_notify_index = max_index.upper()
+    else:
+        min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
     
     from app.services.codeforces import get_user_info
     cf_info = await get_user_info(handle)

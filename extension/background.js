@@ -16,7 +16,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "fetchQueue") {
-    fetchData(request.handle)
+    fetchData(request.handle, request.maxIndex)
       .then((data) => sendResponse({ success: true, data }))
       .catch((err) => sendResponse({ success: false, error: err.message }));
     return true; // Keep message channel open for async response
@@ -32,14 +32,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function syncQueueData() {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get(["cfHandle"], async (result) => {
+    chrome.storage.local.get(["cfHandle", "uxMaxIndex"], async (result) => {
       const handle = result.cfHandle;
       if (!handle) {
         reject(new Error("No handle set"));
         return;
       }
       try {
-        const data = await fetchData(handle);
+        const data = await fetchData(handle, result.uxMaxIndex);
         resolve(data);
       } catch (err) {
         reject(err);
@@ -48,13 +48,17 @@ async function syncQueueData() {
   });
 }
 
-async function fetchData(handle) {
+async function fetchData(handle, maxIndex) {
   try {
-    const response = await fetch(`${API_BASE}/extension/queue/${handle}`);
+    let url = `${API_BASE}/extension/queue/${handle}`;
+    if (maxIndex && maxIndex !== 'Z') {
+      url += `?max_index=${maxIndex}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) {
       if (response.status === 404) {
         console.log("User not found in CF UpsolveX. Falling back to on-the-fly Codeforces API computation.");
-        return await fetchCodeforcesFallback(handle);
+        return await fetchCodeforcesFallback(handle, maxIndex);
       }
       throw new Error(`API returned ${response.status}`);
     }
@@ -74,50 +78,54 @@ async function fetchData(handle) {
   }
 }
 
-async function fetchCodeforcesFallback(handle) {
-  // 1. Fetch user info
-  const infoRes = await fetch(`https://codeforces.com/api/user.info?handles=${handle}&lang=en`);
-  const infoData = await infoRes.json();
-  const userRating = infoData.status === "OK" ? infoData.result[0].rating : null;
+async function fetchCodeforcesFallback(handle, maxIndex) {
+  // Fetch user info
+  const userResp = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+  const userData = await userResp.json();
+  const userRating = userData.result[0].rating || 1500;
 
-  // 2. Fetch user status
-  const statusRes = await fetch(`https://codeforces.com/api/user.status?handle=${handle}&from=1&count=5000&lang=en`);
-  const statusData = await statusRes.json();
-  
-  if (statusData.status !== "OK") {
-    throw new Error("Failed to fetch Codeforces submissions");
-  }
+  // Fetch user status
+  const statusResp = await fetch(`https://codeforces.com/api/user.status?handle=${handle}`);
+  const statusData = await statusResp.json();
 
-  const submissions = statusData.result;
   const solved = new Set();
   const failedMap = new Map();
 
-  for (let i = submissions.length - 1; i >= 0; i--) {
-    const sub = submissions[i];
-    const cId = sub.contestId;
-    if (!cId) continue;
-    const pIdx = sub.problem.index;
-    const key = `${cId}-${pIdx}`;
-
-    if (solved.has(key)) continue;
-
-    if (sub.verdict === "OK") {
-      solved.add(key);
-      failedMap.delete(key);
-    } else if (sub.verdict !== "TESTING") {
-      if (!failedMap.has(key)) {
-        failedMap.set(key, {
-          problem_name: sub.problem.name,
-          contest_id: cId,
-          problem_index: pIdx,
-          problem_rating: sub.problem.rating || 0,
-          failed_attempts: 0
-        });
+  if (statusData.status === "OK") {
+    for (let sub of statusData.result) {
+      if (!sub.problem || !sub.problem.contestId || !sub.problem.index) continue;
+      
+      const cId = sub.problem.contestId;
+      const pIdx = sub.problem.index;
+      
+      // Filter by maxIndex if provided
+      if (maxIndex && maxIndex !== 'Z') {
+        // Strip digits from index (e.g. "A1" -> "A")
+        const charIdx = pIdx.replace(/[0-9]/g, '');
+        if (charIdx > maxIndex) {
+          continue;
+        }
       }
-      failedMap.get(key).failed_attempts += 1;
+
+      const key = `${cId}-${pIdx}`;
+
+      if (sub.verdict === "OK") {
+        solved.add(key);
+      } else {
+        if (!failedMap.has(key)) {
+          failedMap.set(key, {
+            problem_name: sub.problem.name,
+            contest_id: cId,
+            problem_index: pIdx,
+            problem_rating: sub.problem.rating || 0,
+            failed_attempts: 0
+          });
+        }
+        failedMap.get(key).failed_attempts += 1;
+      }
     }
   }
-
+  
   const pending = Array.from(failedMap.values());
   
   pending.forEach(p => {
