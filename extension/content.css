@@ -40,10 +40,13 @@
 
 #cf-upsolvex-sidebar.open {
   right: 0;
+}@keyframes ux-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-
-
-
+.ux-spin {
+  animation: ux-spin-anim 1s linear infinite;
+}
 
 /* Sidebar Header */
 .ux-header {

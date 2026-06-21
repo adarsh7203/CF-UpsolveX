@@ -205,7 +205,10 @@ function renderSidebar(hasHandle = true, isLoading = false) {
         <div class="ux-subtitle" style="white-space: nowrap; font-size: 10px; letter-spacing: 0.5px;">TRACK • UPSOLVE • IMPROVE</div>
       </div>
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-        <div class="ux-close-btn" id="ux-close">&times;</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div id="ux-refresh-btn" style="cursor: pointer; color: #8b949e; font-size: 14px;" title="Sync with Codeforces">&#x21BB;</div>
+          <div class="ux-close-btn" id="ux-close">&times;</div>
+        </div>
         <select id="ux-max-index-select" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); color: #f8fafc; border-radius: 6px; padding: 4px 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; outline: none; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
           <option value="A" ${currentMaxIndex === 'A' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to A</option>
           <option value="B" ${currentMaxIndex === 'B' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to B</option>
@@ -226,6 +229,27 @@ function renderSidebar(hasHandle = true, isLoading = false) {
   document.getElementById("ux-close").onclick = () => {
     sidebar.classList.remove("open");
   };
+
+  const refreshBtn = document.getElementById("ux-refresh-btn");
+  if (refreshBtn) {
+    refreshBtn.onclick = () => {
+      refreshBtn.classList.add("ux-spin");
+      chrome.runtime.sendMessage({ action: "refreshCodeforces", handle: cfHandle }, (refreshRes) => {
+        if (refreshRes && refreshRes.success) {
+          chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle, maxIndex: currentMaxIndex }, (response) => {
+            if (response && response.success) {
+              extensionData = response.data;
+              renderSidebar();
+            } else {
+              refreshBtn.classList.remove("ux-spin");
+            }
+          });
+        } else {
+          refreshBtn.classList.remove("ux-spin");
+        }
+      });
+    };
+  }
 
   const maxIndexSelect = document.getElementById("ux-max-index-select");
   if (maxIndexSelect) {
