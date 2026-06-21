@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { contestApi, settingsApi, userApi, clearApiCache } from '../services/api';
 import toast from 'react-hot-toast';
 import MultiSelectDropdown from '../components/common/MultiSelectDropdown';
+import LoadingScreen from '../components/common/LoadingScreen';
 import './Contests.css';
 
 const Contests = () => {
@@ -97,18 +98,8 @@ const Contests = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">Loading Contests</h2>
-          <p className="sync-subtitle">Fetching your contest history...</p>
-        </div>
-      </div>
-    );
+  if (loading || syncing) {
+    return <LoadingScreen message={syncing ? 'Syncing Codeforces Data' : 'Loading Contests'} />;
   }
 
   const filteredContests = contests.filter(c => {

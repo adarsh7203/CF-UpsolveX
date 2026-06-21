@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { dashboardApi, settingsApi, clearApiCache } from '../services/api';
 import toast from 'react-hot-toast';
 import MultiSelectDropdown from '../components/common/MultiSelectDropdown';
+import LoadingScreen from '../components/common/LoadingScreen';
 import './UpsolveQueue.css';
 
 const UpsolveQueue = () => {
@@ -86,17 +87,7 @@ const UpsolveQueue = () => {
   });
 
   if (loading) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">Loading Queue</h2>
-          <p className="sync-subtitle">Fetching your personalized problem queue...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Queue" />;
   }
 
   return (

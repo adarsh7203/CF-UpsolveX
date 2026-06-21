@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AnalyticsCharts from '../components/charts/AnalyticsCharts';
+import LoadingScreen from '../components/common/LoadingScreen';
 import { dashboardApi, contestApi, userApi, settingsApi, clearApiCache } from '../services/api';
 import { fetchContests } from '../services/codeforces';
 import toast from 'react-hot-toast';
@@ -179,23 +181,7 @@ const Dashboard = () => {
   };
 
   if (loading || syncing) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">
-            {syncing ? 'Syncing Codeforces Data' : 'Loading Dashboard'}
-          </h2>
-          <p className="sync-subtitle">
-            {syncing 
-              ? 'Fetching your contests, submissions, and metrics... this may take a few moments.'
-              : 'Crunching the latest data...'}
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={syncing ? 'Syncing Codeforces Data' : 'Loading Dashboard'} />;
   }
 
   return (

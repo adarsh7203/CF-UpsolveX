@@ -6,6 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import MultiSelectDropdown from '../components/common/MultiSelectDropdown';
+import LoadingScreen from '../components/common/LoadingScreen';
 import './Analytics.css';
 
 const PIE_COLORS = ['#10b981', '#3b82f6', '#ef4444'];
@@ -111,17 +112,7 @@ const Analytics = () => {
   }, [profile, maxIndex, contestTypeFilters, initialSettingsLoaded]);
 
   if (loading) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">Loading Analytics</h2>
-          <p className="sync-subtitle">Crunching your upsolve data...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Analytics" />;
   }
 
   const pieData = analytics ? [

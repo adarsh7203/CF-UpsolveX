@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { settingsApi, clearApiCache } from '../services/api';
 import { supabase } from '../services/supabase'; // Import supabase client for password update
 import toast from 'react-hot-toast';
+import LoadingScreen from '../components/common/LoadingScreen';
 import './Settings.css';
 
 const Settings = () => {
@@ -136,31 +137,11 @@ const Settings = () => {
   };
 
   if (loading) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">Loading Settings</h2>
-          <p className="sync-subtitle">Fetching your preferences...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Settings" />;
   }
 
   if (isSaving) {
-    return (
-      <div className="sync-overlay-container animate-fade-in">
-        <div className="sync-card">
-          <div className="sync-icon-wrapper">
-            <i className="fi fi-rr-rotate-right sync-spin"></i>
-          </div>
-          <h2 className="sync-title">Saving Preferences</h2>
-          <p className="sync-subtitle">Updating your profile and notification settings...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Saving Preferences" />;
   }
 
   return (
