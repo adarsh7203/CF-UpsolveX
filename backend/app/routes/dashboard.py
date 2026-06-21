@@ -21,9 +21,12 @@ def get_dashboard(handle: str, user=Depends(verify_token)):
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    # Get all problem statuses for this user
-    from app.db.supabase_client import fetch_all
-    problems_data = fetch_all(supabase.table("user_problem_status").select("*").eq("user_id", user_id).in_("is_virtual", [True, False]))
+    # Get all problem statuses from cache
+    from app.services.cache_service import get_cached_user_problems
+    all_problems = get_cached_user_problems(user_id)
+    
+    # Filter in python instead of DB query
+    problems_data = [p for p in all_problems if p.get("is_virtual") is not None]
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)

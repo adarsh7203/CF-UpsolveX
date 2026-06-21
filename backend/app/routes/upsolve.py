@@ -19,9 +19,15 @@ def get_upsolve_queue(handle: str):
     min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
     user_rating = user_res.data[0].get("rating")
     
-    # Get all unsolved problems
-    from app.db.supabase_client import fetch_all
-    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(start_time, name)").eq("user_id", user_id).in_("status", ["wrong", "not_attempted"]).in_("is_virtual", [True, False]))
+    # Get all problem statuses from cache
+    from app.services.cache_service import get_cached_user_problems
+    all_problems = get_cached_user_problems(user_id)
+    
+    # Filter locally
+    problems_data = [
+        p for p in all_problems 
+        if p.get("status") in ["wrong", "not_attempted"] and p.get("is_virtual") is not None
+    ]
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)

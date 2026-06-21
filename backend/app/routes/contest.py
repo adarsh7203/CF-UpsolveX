@@ -20,8 +20,10 @@ def get_contests(handle: str, user=Depends(verify_token)):
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    from app.db.supabase_client import fetch_all
-    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(*)").eq("user_id", user_id))
+    from app.services.cache_service import get_cached_user_problems
+    all_problems = get_cached_user_problems(user_id)
+    # The cache already includes contests(*), we just use the list directly
+    problems_data = all_problems
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)
@@ -46,8 +48,11 @@ def get_contest_detail(handle: str, contest_id: int, user=Depends(verify_token))
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    from app.db.supabase_client import fetch_all
-    problems_data = fetch_all(supabase.table("user_problem_status").select("*").eq("user_id", user_id).eq("contest_id", contest_id).order("problem_index"))
+    from app.services.cache_service import get_cached_user_problems
+    all_problems = get_cached_user_problems(user_id)
+    
+    problems_data = [p for p in all_problems if p.get("contest_id") == contest_id]
+    problems_data.sort(key=lambda x: str(x.get("problem_index", "")))
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)

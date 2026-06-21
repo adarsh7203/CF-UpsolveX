@@ -58,4 +58,8 @@ async def refresh_user_data(handle: str):
     if result.get("status") == "error":
         raise HTTPException(status_code=500, detail=result.get("message"))
         
+    # Invalidate the cache so fresh data is loaded on next fetch
+    from app.services.cache_service import invalidate_user_cache
+    invalidate_user_cache(user_id)
+        
     return result

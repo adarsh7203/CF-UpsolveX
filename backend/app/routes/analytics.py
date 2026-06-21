@@ -21,8 +21,10 @@ def get_analytics(handle: str, max_index: Optional[str] = None, division: Option
     if user.id != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this data")
     
-    from app.db.supabase_client import fetch_all
-    problems_data = fetch_all(supabase.table("user_problem_status").select("*, contests(name, start_time)").eq("user_id", user_id).in_("is_virtual", [True, False]))
+    from app.services.cache_service import get_cached_user_problems
+    all_problems = get_cached_user_problems(user_id)
+    
+    problems_data = [p for p in all_problems if p.get("is_virtual") is not None]
     
     from app.services.completion_service import filter_problems_by_index
     

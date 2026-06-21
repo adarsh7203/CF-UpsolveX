@@ -200,12 +200,13 @@ function renderSidebar(hasHandle = true, isLoading = false) {
 
   sidebar.innerHTML = `
     <div class="ux-header">
-      <div>
+      <div style="margin-top: 8px;">
         <h2>CF UpsolveX</h2>
         <div class="ux-subtitle" style="white-space: nowrap; font-size: 10px; letter-spacing: 0.5px;">TRACK • UPSOLVE • IMPROVE</div>
       </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <select id="ux-max-index-select" style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; padding: 4px 6px; font-size: 12px; font-weight: 500; outline: none; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px);">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+        <div class="ux-close-btn" id="ux-close">&times;</div>
+        <select id="ux-max-index-select" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); color: #f8fafc; border-radius: 6px; padding: 4px 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; outline: none; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
           <option value="A" ${currentMaxIndex === 'A' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to A</option>
           <option value="B" ${currentMaxIndex === 'B' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to B</option>
           <option value="C" ${currentMaxIndex === 'C' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to C</option>
@@ -215,7 +216,6 @@ function renderSidebar(hasHandle = true, isLoading = false) {
           <option value="G" ${currentMaxIndex === 'G' ? 'selected' : ''} style="background: #0f172a; color: #fff;">Up to G</option>
           <option value="Z" ${currentMaxIndex === 'Z' ? 'selected' : ''} style="background: #0f172a; color: #fff;">All Problems</option>
         </select>
-        <div class="ux-close-btn" id="ux-close">&times;</div>
       </div>
     </div>
     ${statsHtml}
