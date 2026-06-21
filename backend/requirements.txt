@@ -10,3 +10,4 @@ python-dateutil
 email-validator
 jinja2
 requests
+cachetools
