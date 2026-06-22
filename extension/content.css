@@ -231,6 +231,7 @@
 .ux-btn {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   background: linear-gradient(135deg, var(--ux-primary), #3b82f6);
   color: white !important;
