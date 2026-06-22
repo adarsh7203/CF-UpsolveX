@@ -5,6 +5,42 @@ let cfHandle = null;
 let extensionData = null;
 let currentMaxIndex = 'Z';
 
+function showToast(message, type="success") {
+  const toast = document.createElement("div");
+  toast.style.position = "fixed";
+  toast.style.bottom = "24px";
+  toast.style.right = "24px";
+  toast.style.backgroundColor = type === "success" ? "#10b981" : "#ef4444";
+  toast.style.color = "#ffffff";
+  toast.style.padding = "12px 24px";
+  toast.style.borderRadius = "8px";
+  toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+  toast.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+  toast.style.fontSize = "14px";
+  toast.style.fontWeight = "600";
+  toast.style.zIndex = "10001";
+  toast.style.opacity = "0";
+  toast.style.transform = "translateY(20px)";
+  toast.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+  
+  const icon = type === "success" ? '✓' : '✕';
+  toast.innerHTML = `<span style="margin-right: 8px; font-weight: bold;">${icon}</span>${message}`;
+  
+  document.body.appendChild(toast);
+  
+  // Trigger animation after a tiny delay to ensure CSS transition works
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  }, 10);
+  
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 // Initialize
 function init() {
   const detectedHandle = detectHandleFromDOM();
@@ -243,12 +279,15 @@ function renderSidebar(hasHandle = true, isLoading = false) {
             if (response && response.success) {
               extensionData = response.data;
               renderSidebar();
+              showToast("Queue Refreshed Successfully!");
             } else {
               refreshBtn.classList.remove("ux-spin");
+              showToast("Failed to fetch new queue.", "error");
             }
           });
         } else {
           refreshBtn.classList.remove("ux-spin");
+          showToast("Failed to refresh. Try again later.", "error");
         }
       });
     };
