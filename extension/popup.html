@@ -26,10 +26,12 @@
     
     .logo {
       width: 100px;
-      height: 100px;
+      height: auto; /* Preserve aspect ratio */
+      max-height: 100px;
       border-radius: 16px;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
+      object-fit: contain;
+      transform: translateZ(0);
+      backface-visibility: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
