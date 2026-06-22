@@ -216,6 +216,7 @@
 
 /* Footer / CTA */
 .ux-footer {
+  flex-shrink: 0;
   padding: 20px 24px;
   background: linear-gradient(to top, rgba(13, 17, 23, 1), rgba(22, 27, 34, 0.8));
   text-align: center;
