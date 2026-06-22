@@ -227,15 +227,7 @@ function renderSidebar(hasHandle = true, isLoading = false) {
     </div>
   `;
 
-  if (is_registered === false) {
-    footerHtml += `
-      <div style="background: rgba(255, 152, 0, 0.1); padding: 15px; margin: 10px; border-radius: 8px; text-align: center; border: 1px solid rgba(255, 152, 0, 0.3);">
-        <div style="color: #ffb74d; font-size: 13px; margin-bottom: 10px; font-weight: 600;">🔥 This is a teaser queue!</div>
-        <div style="color: #bbb; font-size: 12px; margin-bottom: 12px; line-height: 1.4;">Get advanced analytics, streak tracking, and personalized nudges.</div>
-        <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn" style="background: #ff9800; color: #fff; width: 100%; border: none;">Register on CF UpsolveX</a>
-      </div>
-    `;
-  }
+
 
   sidebar.innerHTML = `
     <div class="ux-header">
