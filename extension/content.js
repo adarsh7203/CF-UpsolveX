@@ -277,9 +277,16 @@ function renderSidebar(hasHandle = true, isLoading = false) {
         if (refreshRes && refreshRes.success) {
           chrome.runtime.sendMessage({ action: "fetchQueue", handle: cfHandle, maxIndex: currentMaxIndex }, (response) => {
             if (response && response.success) {
+              const oldDataStr = JSON.stringify(extensionData);
+              const newDataStr = JSON.stringify(response.data);
               extensionData = response.data;
               renderSidebar();
-              showToast("Queue Refreshed Successfully!");
+              
+              if (oldDataStr === newDataStr) {
+                showToast("Queue is already up-to-date!");
+              } else {
+                showToast("Queue Refreshed Successfully!");
+              }
             } else {
               refreshBtn.classList.remove("ux-spin");
               showToast("Failed to fetch new queue.", "error");
@@ -325,7 +332,13 @@ function injectNavbarButton(toggleFn) {
   a.href = "#";
   a.textContent = "CF UpsolveX";
   
-  // Styling is handled by #ux-nav-btn a in content.css
+  // Compact button styling directly on 'a' to avoid span clipping
+  a.style.color = "#58a6ff"; 
+  a.style.fontWeight = "bold";
+  a.style.border = "1px solid rgba(30, 98, 201, 0.8)"; // Darker border
+  a.style.borderRadius = "4px";
+  a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
+  a.style.boxShadow = "0 0 6px rgba(88, 166, 255, 0.4)"; // Little shining glow
   
   // Flexbox for perfect text centering inside the border
   a.style.display = "inline-flex";
@@ -347,11 +360,13 @@ function injectNavbarButton(toggleFn) {
   
   a.onmouseover = () => {
     a.style.backgroundColor = "rgba(88, 166, 255, 0.2)";
-    a.style.border = "1px solid rgba(88, 166, 255, 0.8)";
+    a.style.border = "1px solid rgba(30, 98, 201, 1)";
+    a.style.boxShadow = "0 0 10px rgba(88, 166, 255, 0.8)"; // Brighter shine on hover
   };
   a.onmouseout = () => {
     a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
-    a.style.border = "1px solid rgba(88, 166, 255, 0.5)";
+    a.style.border = "1px solid rgba(30, 98, 201, 0.8)";
+    a.style.boxShadow = "0 0 6px rgba(88, 166, 255, 0.4)";
   };
   
   a.onclick = (e) => {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CF UpsolveX Companion",
-  "version": "1.0.0",
+  "version": "1.0",
   "description": "Your Codeforces productivity companion. See your priority upsolve queue directly on Codeforces.",
   "permissions": ["storage", "alarms"],
   "host_permissions": [
