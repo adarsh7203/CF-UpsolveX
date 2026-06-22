@@ -124,12 +124,11 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 if contest_problem_counts.get(cid, 0) < 4 and augment_count < 15:
                     augment_count += 1
                     try:
-                        res = await client.get(f"https://codeforces.com/api/contest.status?contestId={cid}&from=1&count=500", timeout=5)
+                        res = await client.get(f"https://codeforces.com/api/contest.standings?contestId={cid}&from=1&count=1", timeout=5)
                         if res.status_code == 200:
                             data = res.json()
                             if data.get("status") == "OK":
-                                for sub in data.get("result", []):
-                                    prob = sub.get("problem", {})
+                                for prob in data.get("result", {}).get("problems", []):
                                     idx = prob.get("index")
                                     key = (cid, idx)
                                     if key not in problem_status_map:

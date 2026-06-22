@@ -37,7 +37,7 @@ async def trigger_notification(handle: str, contest_id: int):
     contest_res = supabase.table("contests").select("name").eq("contest_id", contest_id).execute()
     contest_name = contest_res.data[0]["name"] if contest_res.data else f"Contest {contest_id}"
     
-    dashboard_link = f"https://cfupsolvex.com/dashboard/{handle}"
+    dashboard_link = f"https://cfupsolvex.netlify.app/contests/{contest_id}"
     
     # Send email
     result = send_reminder_email(

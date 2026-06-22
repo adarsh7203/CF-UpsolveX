@@ -91,7 +91,10 @@ function renderSidebar(hasHandle = true, isLoading = false) {
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
         <div style="font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px;">Authentication Required</div>
-        <div style="font-size: 13px; line-height: 1.5;">Please login to your Codeforces account to see your Upsolve Queue.</div>
+        <div style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;">Please login to your Codeforces account to see your Upsolve Queue.</div>
+        <div style="width: 100%; height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 20px;"></div>
+        <div style="font-size: 12px; color: #8b949e; margin-bottom: 12px;">Don't have a CF UpsolveX account?</div>
+        <a href="${MAIN_APP_URL}" target="_blank" class="ux-btn" style="background: #3b82f6; color: #fff; text-decoration: none; display: inline-block; width: 100%;">Register on CF UpsolveX</a>
       </div>
     `;
     document.getElementById("ux-close").onclick = () => {
@@ -283,12 +286,7 @@ function injectNavbarButton(toggleFn) {
   a.href = "#";
   a.textContent = "CF UpsolveX";
   
-  // Compact button styling directly on 'a' to avoid span clipping
-  a.style.color = "#58a6ff"; 
-  a.style.fontWeight = "bold";
-  a.style.border = "1px solid rgba(88, 166, 255, 0.5)";
-  a.style.borderRadius = "4px";
-  a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
+  // Styling is handled by #ux-nav-btn a in content.css
   
   // Flexbox for perfect text centering inside the border
   a.style.display = "inline-flex";

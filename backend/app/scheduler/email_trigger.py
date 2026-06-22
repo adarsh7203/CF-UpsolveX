@@ -51,7 +51,7 @@ def check_and_send_emails():
                     # Sort upsolve queue by index
                     upsolve_queue.sort(key=lambda x: x["index"])
                     
-                    dashboard_link = f"http://localhost:5173/contests/{cid}"
+                    dashboard_link = f"https://cfupsolvex.netlify.app/contests/{cid}"
                     
                     send_reminder_email(
                         user_email=user["email"],

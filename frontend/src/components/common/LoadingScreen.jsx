@@ -7,17 +7,28 @@ const LoadingScreen = ({ message = 'Syncing Codeforces Data' }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Pick 3 random tips on mount
+  // Pick 3 random tips
   useEffect(() => {
     const shuffled = [...cpTips].sort(() => 0.5 - Math.random());
     setSelectedTips(shuffled.slice(0, 3));
-  }, []);
+    setCurrentTipIndex(0);
+    setDisplayedText('');
+    setIsTyping(true);
+  }, [refreshTrigger]);
 
   // Typewriter effect
   useEffect(() => {
     if (selectedTips.length === 0) return;
-    if (currentTipIndex >= selectedTips.length) return;
+
+    if (currentTipIndex >= selectedTips.length) {
+      // All 3 tips are done. Wait 3 seconds, then pick 3 new tips.
+      const timeout = setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
 
     const fullText = selectedTips[currentTipIndex];
     
@@ -49,7 +60,7 @@ const LoadingScreen = ({ message = 'Syncing Codeforces Data' }) => {
           </div>
           <div className="terminal-title">
             <i className="fi fi-rr-rotate-right sync-spin"></i>
-            {message}...
+            {message}... <span style={{ opacity: 0.6, fontSize: '12px', marginLeft: '6px', fontWeight: 'normal' }}>(CF API limits may cause slight delays)</span>
           </div>
         </div>
         
@@ -71,7 +82,7 @@ const LoadingScreen = ({ message = 'Syncing Codeforces Data' }) => {
             </div>
           )}
 
-          {/* If all 3 are done, keep blinking cursor at end */}
+          {/* If all 3 are done, keep blinking cursor at end until refresh */}
           {currentTipIndex >= selectedTips.length && (
             <div className="terminal-line">
               <span className="terminal-prompt">~</span>

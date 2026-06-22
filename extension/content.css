@@ -40,12 +40,69 @@
 
 #cf-upsolvex-sidebar.open {
   right: 0;
-}@keyframes ux-spin-anim {
+}
+
+@keyframes ux-spin-anim {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 .ux-spin {
   animation: ux-spin-anim 1s linear infinite;
+}
+
+@keyframes ux-pulse-anim {
+  0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
+  70% { box-shadow: 0 0 10px 6px rgba(168, 85, 247, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+}
+.ux-pulse-btn {
+  animation: ux-pulse-anim 2s infinite;
+}
+
+/* Navbar Button Overrides to prevent Codeforces CSS interference */
+#ux-nav-btn a {
+  color: #ffffff !important;
+  font-weight: bold !important;
+  border: 1px solid #7e22ce !important;
+  border-radius: 4px !important;
+  background-color: #7e22ce !important;
+  opacity: 1 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Shiny sweeping effect */
+#ux-nav-btn a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  animation: ux-shine 5s infinite;
+}
+
+@keyframes ux-shine {
+  0% { left: -100%; }
+  30% { left: 200%; }
+  100% { left: 200%; }
+}
+
+#ux-nav-btn a:hover, #ux-nav-btn a:focus {
+  background-color: #6b21a8 !important;
+  border-color: #6b21a8 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-decoration: none !important;
+}
+
+#ux-nav-btn a:visited, #ux-nav-btn a:active {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 /* Sidebar Header */

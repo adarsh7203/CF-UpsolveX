@@ -45,7 +45,7 @@ def force_test_email():
     upsolve_queue = [p for p in c_data["problems"] if p["status"] in ["wrong", "not_attempted"]]
     upsolve_queue.sort(key=lambda x: x["index"])
     
-    dashboard_link = f"http://localhost:5173/contests/{cid}"
+    dashboard_link = f"https://cfupsolvex.netlify.app/contests/{cid}"
     
     print(f"Sending test email for contest: {c_data['name']}...")
     result = send_reminder_email(

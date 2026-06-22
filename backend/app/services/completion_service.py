@@ -1,4 +1,5 @@
 from typing import List, Dict, Any
+from datetime import datetime, date, timedelta
 
 def filter_problems_by_index(problems: List[Dict[str, Any]], min_notify_index: str) -> List[Dict[str, Any]]:
     """Dynamically filters problems based on user's min_notify_index setting."""
@@ -27,10 +28,38 @@ def calculate_kpis(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
     if total_problems > 0:
         completion_rate = round(((solved_during + completed_upsolves) / total_problems) * 100, 2)
         
+    # Calculate streak
+    streak = 0
+    solved_dates = set()
+    for p in problems:
+        if p.get("status") in ["solved", "upsolved"] and p.get("solved_at"):
+            try:
+                dt = datetime.fromisoformat(p.get("solved_at"))
+                solved_dates.add(dt.date())
+            except:
+                pass
+                
+    if solved_dates:
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+        
+        current_date = None
+        if today in solved_dates:
+            streak = 1
+            current_date = yesterday
+        elif yesterday in solved_dates:
+            streak = 1
+            current_date = yesterday - timedelta(days=1)
+            
+        if current_date:
+            while current_date in solved_dates:
+                streak += 1
+                current_date -= timedelta(days=1)
+                
     return {
         "pending_upsolves": pending_upsolves,
         "completed_upsolves": completed_upsolves,
-        "current_streak": 0, # Planned feature
+        "current_streak": streak,
         "total_contests": total_contests,
         "total_solved": solved_during,
         "completion_rate": completion_rate
