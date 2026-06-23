@@ -29,7 +29,7 @@ async def get_user_rating(handle: str) -> List[Dict[str, Any]]:
 
 async def get_user_info(handle: str) -> Dict[str, Any]:
     """Fetch user info (rating, rank)."""
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(f"{CF_API_BASE}/user.info", params={"handles": handle, "lang": "en"})
         if response.status_code != 200:
             return {}
