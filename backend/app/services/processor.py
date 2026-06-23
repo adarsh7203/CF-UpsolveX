@@ -315,8 +315,9 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # 6. Clean up stale missed contests
     stale_cids = set()
     for ep in existing_problems.values():
-        if ep["contest_id"] not in target_contest_ids:
-            stale_cids.add(ep["contest_id"])
+        cid_int = int(ep["contest_id"])
+        if cid_int not in target_contest_ids:
+            stale_cids.add(cid_int)
             
     if stale_cids:
         stale_list = list(stale_cids)
