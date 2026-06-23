@@ -23,6 +23,12 @@ async def sync_user_data(user_id: str, cf_handle: str):
     user_info = await get_user_info(cf_handle)
     all_problems = await get_all_problems()
     
+    # WIPE OUT all old missed contests before syncing to ensure no stale data remains
+    try:
+        supabase.table("user_problem_status").delete().eq("user_id", user_id).is_("is_virtual", "null").execute()
+    except Exception as e:
+        print(f"Failed to wipe old missed contests: {e}")
+        
     # Update user's current rating, rank, and full cf_info in the database
     if user_info:
         try:
@@ -34,6 +40,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
         except Exception as e:
             print(f"Failed to update user cf_info: {e}")
             pass
+            
     
     # 1. Determine participated contests
     # Only contests in rating_history are truly Rated (is_virtual = False)
@@ -311,20 +318,5 @@ async def sync_user_data(user_id: str, cf_handle: str):
             supabase.table("users").update({"last_notified_contest_id": max_cid}).eq("id", user_id).execute()
         except Exception as e:
             print(f"Failed to set initial last_notified_contest_id: {e}")
-            
-    # 6. Clean up stale missed contests
-    stale_cids = set()
-    for ep in existing_problems.values():
-        cid_int = int(ep["contest_id"])
-        if cid_int not in target_contest_ids:
-            stale_cids.add(cid_int)
-            
-    if stale_cids:
-        stale_list = list(stale_cids)
-        for i in range(0, len(stale_list), 50):
-            try:
-                supabase.table("user_problem_status").delete().eq("user_id", user_id).in_("contest_id", stale_list[i:i+50]).execute()
-            except Exception as e:
-                print(f"Failed to delete stale contests: {e}")
                 
     return {"status": "success", "processed_problems": len(upsert_data)}
