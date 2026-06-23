@@ -100,6 +100,13 @@ async def sync_user_data(user_id: str, cf_handle: str):
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
             if letter:
                 key = (cid, idx)
+                if cid in live_participated_contest_ids:
+                    is_virt = False
+                elif cid in participated_contest_ids:
+                    is_virt = True
+                else:
+                    is_virt = None
+                    
                 if key in existing_problems:
                     ep = existing_problems[key]
                     problem_status_map[key] = {
@@ -110,7 +117,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
                         "status": ep.get("status", "not_attempted"),
                         "failed_attempts": ep.get("failed_attempts", 0),
                         "solved_at": ep.get("solved_at"),
-                        "is_virtual": ep.get("is_virtual")
+                        "is_virtual": is_virt
                     }
                 else:
                     problem_status_map[key] = {
@@ -121,7 +128,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
                         "status": "not_attempted",
                         "failed_attempts": 0,
                         "solved_at": None,
-                        "is_virtual": False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
+                        "is_virtual": is_virt
                     }
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
     
