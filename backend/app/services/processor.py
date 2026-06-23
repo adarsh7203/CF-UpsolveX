@@ -37,11 +37,19 @@ async def sync_user_data(user_id: str, cf_handle: str):
     
     # 1. Determine participated contests
     official_contest_ids = set([r["contestId"] for r in rating_history])
-    participated_contest_ids = set(official_contest_ids)
+    live_participated_contest_ids = set(official_contest_ids)
     
     for sub in submissions:
         p_type = sub.get("author", {}).get("participantType")
-        if p_type == "CONTESTANT" or (include_virtual and p_type in ["VIRTUAL", "OUT_OF_COMPETITION"]):
+        if p_type in ["CONTESTANT", "OUT_OF_COMPETITION"]:
+            cid = sub.get("contestId")
+            if cid:
+                live_participated_contest_ids.add(cid)
+                
+    participated_contest_ids = set(live_participated_contest_ids)
+    for sub in submissions:
+        p_type = sub.get("author", {}).get("participantType")
+        if include_virtual and p_type == "VIRTUAL":
             cid = sub.get("contestId")
             if cid:
                 participated_contest_ids.add(cid)
@@ -130,7 +138,13 @@ async def sync_user_data(user_id: str, cf_handle: str):
         if key not in problem_status_map:
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
             if letter:
-                is_virt = False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
+                if cid in live_participated_contest_ids:
+                    is_virt = False
+                elif cid in participated_contest_ids:
+                    is_virt = True
+                else:
+                    is_virt = None
+                    
                 problem_status_map[key] = {
                     "contest_id": cid,
                     "problem_index": idx,
