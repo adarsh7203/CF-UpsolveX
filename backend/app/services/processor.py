@@ -52,17 +52,24 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 participated_contest_ids.add(cid)
                 
     # Also add all missed contests after user registration
-    user_info = await get_user_info(cf_handle)
-    import time
-    # Default to 1 year ago if API fails
-    default_reg_time = int(time.time()) - (365 * 24 * 60 * 60)
-    reg_time = user_info.get("registrationTimeSeconds", default_reg_time) if user_info else default_reg_time
+    # Use the first contest participation time as the start date if available, 
+    # otherwise fallback to registrationTimeSeconds
+    if rating_history:
+        # rating_history is chronologically ordered
+        start_competing_time = rating_history[0].get("ratingUpdateTimeSeconds")
+    else:
+        user_info = await get_user_info(cf_handle)
+        import time
+        # Default to 1 year ago if API fails
+        default_reg_time = int(time.time()) - (365 * 24 * 60 * 60)
+        start_competing_time = user_info.get("registrationTimeSeconds", default_reg_time) if user_info else default_reg_time
+
     missed_contest_ids = set()
     all_contests = await get_all_contests()
     for cf_c in all_contests:
         if cf_c.get("phase") == "FINISHED":
             start_time = cf_c.get("startTimeSeconds", 0)
-            if start_time >= reg_time:
+            if start_time >= start_competing_time:
                 cid = cf_c.get("id")
                 if cid not in participated_contest_ids:
                     missed_contest_ids.add(cid)
@@ -305,4 +312,18 @@ async def sync_user_data(user_id: str, cf_handle: str):
         except Exception as e:
             print(f"Failed to set initial last_notified_contest_id: {e}")
             
+    # 6. Clean up stale missed contests
+    stale_cids = set()
+    for ep in existing_problems.values():
+        if ep["contest_id"] not in target_contest_ids:
+            stale_cids.add(ep["contest_id"])
+            
+    if stale_cids:
+        stale_list = list(stale_cids)
+        for i in range(0, len(stale_list), 50):
+            try:
+                supabase.table("user_problem_status").delete().eq("user_id", user_id).in_("contest_id", stale_list[i:i+50]).execute()
+            except Exception as e:
+                print(f"Failed to delete stale contests: {e}")
+                
     return {"status": "success", "processed_problems": len(upsert_data)}
