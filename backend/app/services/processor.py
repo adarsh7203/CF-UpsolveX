@@ -118,8 +118,6 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # (Fixes CF API bug where shared Div2 problems are omitted from problemset.problems)
     for sub in submissions:
         cid = sub.get("contestId")
-        if cid not in target_contest_ids:
-            continue
             
         prob = sub.get("problem", {})
         idx = prob.get("index")
@@ -180,8 +178,6 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # Process oldest to newest to update statuses correctly
     for sub in reversed(submissions):
         cid = sub.get("contestId")
-        if cid not in target_contest_ids:
-            continue
             
         prob = sub.get("problem", {})
         idx = prob.get("index")

@@ -16,6 +16,7 @@ def get_dashboard(handle: str, user=Depends(verify_token)):
         raise HTTPException(status_code=404, detail="User not found")
     user_id = user_res.data[0]["id"]
     min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
+    include_virtual = user_res.data[0].get("include_virtual", False)
     
     # Optional: verify that the token owner is requesting their own data
     if user.id != user_id:
@@ -26,7 +27,11 @@ def get_dashboard(handle: str, user=Depends(verify_token)):
     all_problems = get_cached_user_problems(user_id)
     
     # Filter in python instead of DB query
-    problems_data = [p for p in all_problems if p.get("is_virtual") is not None]
+    if include_virtual:
+        problems_data = all_problems
+    else:
+        problems_data = [p for p in all_problems if p.get("is_virtual") != True]
+
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)
