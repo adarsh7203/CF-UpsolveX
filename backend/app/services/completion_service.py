@@ -15,11 +15,8 @@ def filter_problems_by_index(problems: List[Dict[str, Any]], min_notify_index: s
     return filtered
 
 def filter_by_virtual_setting(problems: List[Dict[str, Any]], include_virtual: bool) -> List[Dict[str, Any]]:
-    """Filters problems to only include participated contests, respecting include_virtual setting."""
-    if include_virtual:
-        return [p for p in problems if p.get("is_virtual") is not None]
-    else:
-        return [p for p in problems if p.get("is_virtual") == False]
+    """Filters problems to only include participated contests. include_virtual is handled during DB ingestion."""
+    return [p for p in problems if p.get("is_virtual") is not None]
 
 def calculate_kpis(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculates dashboard KPI metrics from raw problem statuses."""
