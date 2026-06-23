@@ -27,10 +27,8 @@ def get_dashboard(handle: str, user=Depends(verify_token)):
     all_problems = get_cached_user_problems(user_id)
     
     # Filter in python instead of DB query
-    if include_virtual:
-        problems_data = all_problems
-    else:
-        problems_data = [p for p in all_problems if p.get("is_virtual") != True]
+    from app.services.completion_service import filter_problems_by_index, filter_by_virtual_setting
+    problems_data = filter_by_virtual_setting(all_problems, include_virtual)
 
     
     from app.services.completion_service import filter_problems_by_index

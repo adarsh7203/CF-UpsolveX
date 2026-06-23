@@ -14,6 +14,13 @@ def filter_problems_by_index(problems: List[Dict[str, Any]], min_notify_index: s
         filtered.append(p)
     return filtered
 
+def filter_by_virtual_setting(problems: List[Dict[str, Any]], include_virtual: bool) -> List[Dict[str, Any]]:
+    """Filters problems to only include participated contests, respecting include_virtual setting."""
+    if include_virtual:
+        return [p for p in problems if p.get("is_virtual") is not None]
+    else:
+        return [p for p in problems if p.get("is_virtual") == False]
+
 def calculate_kpis(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculates dashboard KPI metrics from raw problem statuses."""
     pending_upsolves = len([p for p in problems if p.get("status") in ["wrong", "not_attempted"]])

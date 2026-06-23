@@ -47,9 +47,13 @@ async def sync_user_data(user_id: str, cf_handle: str):
                 participated_contest_ids.add(cid)
                 
     # Also add all missed contests after user registration
-    all_contests = await get_all_contests()
-    reg_time = user_info.get("registrationTimeSeconds", 0) if user_info else 0
+    user_info = await get_user_info(cf_handle)
+    import time
+    # Default to 1 year ago if API fails
+    default_reg_time = int(time.time()) - (365 * 24 * 60 * 60)
+    reg_time = user_info.get("registrationTimeSeconds", default_reg_time) if user_info else default_reg_time
     missed_contest_ids = set()
+    all_contests = await get_all_contests()
     for cf_c in all_contests:
         if cf_c.get("phase") == "FINISHED":
             start_time = cf_c.get("startTimeSeconds", 0)

@@ -12,22 +12,22 @@ def get_upsolve_queue(handle: str):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
         
-    user_res = supabase.table("users").select("id, min_notify_index, rating").eq("cf_handle", handle).execute()
+    user_res = supabase.table("users").select("id, min_notify_index, rating, include_virtual").eq("cf_handle", handle).execute()
     if not user_res.data:
         raise HTTPException(status_code=404, detail="User not found")
     user_id = user_res.data[0]["id"]
     min_notify_index = user_res.data[0].get("min_notify_index", "Z").upper()
     user_rating = user_res.data[0].get("rating")
+    include_virtual = user_res.data[0].get("include_virtual", False)
     
     # Get all problem statuses from cache
     from app.services.cache_service import get_cached_user_problems
     all_problems = get_cached_user_problems(user_id)
     
     # Filter locally
-    problems_data = [
-        p for p in all_problems 
-        if p.get("status") in ["wrong", "not_attempted"] and p.get("is_virtual") is not None
-    ]
+    from app.services.completion_service import filter_by_virtual_setting
+    problems_data = filter_by_virtual_setting(all_problems, include_virtual)
+    problems_data = [p for p in problems_data if p.get("status") in ["wrong", "not_attempted"]]
     
     from app.services.completion_service import filter_problems_by_index
     filtered_problems = filter_problems_by_index(problems_data, min_notify_index)

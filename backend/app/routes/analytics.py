@@ -12,10 +12,11 @@ def get_analytics(handle: str, max_index: Optional[str] = None, division: Option
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
         
-    user_res = supabase.table("users").select("id").eq("cf_handle", handle).execute()
+    user_res = supabase.table("users").select("id, include_virtual").eq("cf_handle", handle).execute()
     if not user_res.data:
         raise HTTPException(status_code=404, detail="User not found")
     user_id = user_res.data[0]["id"]
+    include_virtual = user_res.data[0].get("include_virtual", False)
     
     # Optional: verify that the token owner is requesting their own data
     if user.id != user_id:
@@ -24,7 +25,8 @@ def get_analytics(handle: str, max_index: Optional[str] = None, division: Option
     from app.services.cache_service import get_cached_user_problems
     all_problems = get_cached_user_problems(user_id)
     
-    problems_data = [p for p in all_problems if p.get("is_virtual") is not None]
+    from app.services.completion_service import filter_problems_by_index, filter_by_virtual_setting
+    problems_data = filter_by_virtual_setting(all_problems, include_virtual)
     
     from app.services.completion_service import filter_problems_by_index
     

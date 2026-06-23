@@ -13,11 +13,12 @@ async def get_extension_data(handle: str, max_index: str = None):
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
         
-    user_res = supabase.table("users").select("id, min_notify_index").eq("cf_handle", handle).execute()
+    user_res = supabase.table("users").select("id, min_notify_index, include_virtual").eq("cf_handle", handle).execute()
     if not user_res.data:
         raise HTTPException(status_code=404, detail="User not found")
         
     user_id = user_res.data[0]["id"]
+    include_virtual = user_res.data[0].get("include_virtual", False)
     
     if max_index:
         min_notify_index = max_index.upper()
@@ -32,7 +33,8 @@ async def get_extension_data(handle: str, max_index: str = None):
     from app.services.cache_service import get_cached_user_problems
     all_problems = get_cached_user_problems(user_id)
     
-    problems_data = [p for p in all_problems if p.get("is_virtual") is not None]
+    from app.services.completion_service import filter_problems_by_index, filter_by_virtual_setting
+    problems_data = filter_by_virtual_setting(all_problems, include_virtual)
     
     # Filter problems based on user's notification index settings
     filtered_all = filter_problems_by_index(problems_data, min_notify_index)
