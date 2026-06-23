@@ -63,18 +63,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
     if not target_contest_ids:
         return {"status": "success", "message": "No contests found"}
         
-    # 1.5 Fetch existing user problems from DB
-    try:
-        existing_problems_res = supabase.table("user_problem_status").select("*").eq("user_id", user_id).execute()
-        existing_problems = {}
-        if existing_problems_res.data:
-            for p in existing_problems_res.data:
-                key = (p["contest_id"], p["problem_index"])
-                existing_problems[key] = p
-    except Exception as e:
-        print(f"Failed to fetch existing problems: {e}")
-        existing_problems = {}
-        
+
     # 2. Pre-populate problem_status_map with ALL eligible problems from participated and missed contests
     problem_status_map = {}
     contest_problem_counts = {}
@@ -87,29 +76,16 @@ async def sync_user_data(user_id: str, cf_handle: str):
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
             if letter:
                 key = (cid, idx)
-                if key in existing_problems:
-                    ep = existing_problems[key]
-                    problem_status_map[key] = {
-                        "contest_id": cid,
-                        "problem_index": idx,
-                        "problem_rating": prob.get("rating") or ep.get("problem_rating"),
-                        "problem_url": ep.get("problem_url", f"https://codeforces.com/contest/{cid}/problem/{idx}"),
-                        "status": ep.get("status", "not_attempted"),
-                        "failed_attempts": ep.get("failed_attempts", 0),
-                        "solved_at": ep.get("solved_at"),
-                        "is_virtual": ep.get("is_virtual")
-                    }
-                else:
-                    problem_status_map[key] = {
-                        "contest_id": cid,
-                        "problem_index": idx,
-                        "problem_rating": prob.get("rating"),
-                        "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
-                        "status": "not_attempted",
-                        "failed_attempts": 0,
-                        "solved_at": None,
-                        "is_virtual": False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
-                    }
+                problem_status_map[key] = {
+                    "contest_id": cid,
+                    "problem_index": idx,
+                    "problem_rating": prob.get("rating"),
+                    "problem_url": f"https://codeforces.com/contest/{cid}/problem/{idx}",
+                    "status": "not_attempted",
+                    "failed_attempts": 0,
+                    "solved_at": None,
+                    "is_virtual": False if cid in official_contest_ids else (True if cid in participated_contest_ids else None)
+                }
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
     
     # 3. Process submissions to update statuses
