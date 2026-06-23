@@ -1,3 +1,11 @@
+/*
+ * CF UpsolveX Extension
+ * Author: Adarsh Gupta
+ * Description: Codeforces productivity companion
+ */
+console.log("EXTENSION LOADED");
+console.log("%cCF UpsolveX by Adarsh Gupta", "color: yellow;");
+
 // Main UI rendering logic
 const MAIN_APP_URL = "https://cfupsolvex.netlify.app"; // Update to production URL later
 

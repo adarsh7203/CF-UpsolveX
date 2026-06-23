@@ -1,4 +1,8 @@
-/* CF UpsolveX Extension Styles */
+/* 
+ * CF UpsolveX Extension Styles 
+ * Author: Adarsh Gupta
+ * Description: UI styling for the extension sidebar
+ */
 :root {
   --ux-bg: #0d1117;
   --ux-bg-secondary: #161b22;

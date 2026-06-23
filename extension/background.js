@@ -1,3 +1,8 @@
+/*
+ * CF UpsolveX Extension
+ * Author: Adarsh Gupta
+ * Description: Codeforces productivity companion service worker
+ */
 // default dev api
 const API_BASE = "https://cf-upsolvex.onrender.com/api";
 
