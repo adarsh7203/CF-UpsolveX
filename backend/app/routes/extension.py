@@ -85,3 +85,31 @@ async def get_extension_data(handle: str, max_index: str = None):
         "queue_size": len(queue),
         "stats": kpis
     }
+
+
+@router.post("/refresh/{handle}")
+async def refresh_user_data_extension(handle: str):
+    """Public endpoint for the Chrome Extension to trigger a Codeforces sync.
+    Mirrors /api/user/{handle}/refresh but without requiring JWT auth."""
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    # Get user id
+    user_res = supabase.table("users").select("id").eq("cf_handle", handle).execute()
+    if not user_res.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_id = user_res.data[0]["id"]
+    
+    # Run the processor to sync latest data from Codeforces
+    from app.services.processor import sync_user_data
+    result = await sync_user_data(user_id, handle)
+    
+    if result.get("status") == "error":
+        raise HTTPException(status_code=500, detail=result.get("message"))
+    
+    # Invalidate the cache so fresh data is loaded on next fetch
+    from app.services.cache_service import invalidate_user_cache
+    invalidate_user_cache(user_id)
+    
+    return result

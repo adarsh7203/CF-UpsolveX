@@ -205,7 +205,7 @@ function renderSidebar(hasHandle = true, isLoading = false) {
       const divBadgeHtml = divBadgeText ? `<span style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-size: 10px; font-weight: 600; color: #8b949e; border: 1px solid rgba(255,255,255,0.1);">${divBadgeText}</span>` : "";
 
       queueHtml += `
-        <a href="/problemset/problem/${p.contest_id}/${p.problem_index}" class="ux-queue-item">
+        <a href="/problemset/problem/${p.contest_id}/${p.problem_index}" target="_blank" class="ux-queue-item">
           <div class="ux-item-details">
             <div class="ux-item-title">${p.contest_id}${p.problem_index} - ${p.problem_name || 'Problem'}</div>
             <div class="ux-item-meta">Rating: ${rating}${divBadgeHtml}</div>
@@ -317,6 +317,19 @@ function injectNavbarButton(toggleFn) {
   
   if (document.getElementById("ux-nav-btn")) return;
 
+  // Inject a subtle breathing glow animation
+  if (!document.getElementById("ux-nav-btn-styles")) {
+    const styleEl = document.createElement("style");
+    styleEl.id = "ux-nav-btn-styles";
+    styleEl.textContent = `
+      @keyframes ux-glow-breathe {
+        0%, 100% { box-shadow: 0 0 6px rgba(88, 166, 255, 0.4); }
+        50% { box-shadow: 0 0 14px rgba(88, 166, 255, 0.7), 0 0 4px rgba(88, 166, 255, 0.3); }
+      }
+    `;
+    document.head.appendChild(styleEl);
+  }
+
   const li = document.createElement("li");
   li.id = "ux-nav-btn";
   
@@ -327,10 +340,10 @@ function injectNavbarButton(toggleFn) {
   // Compact button styling directly on 'a' to avoid span clipping
   a.style.color = "#58a6ff"; 
   a.style.fontWeight = "bold";
-  a.style.border = "1px solid rgba(30, 98, 201, 0.8)"; // Darker border
+  a.style.border = "1px solid rgba(30, 98, 201, 0.8)";
   a.style.borderRadius = "4px";
   a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
-  a.style.boxShadow = "0 0 6px rgba(88, 166, 255, 0.4)"; // Little shining glow
+  a.style.boxShadow = "0 0 6px rgba(88, 166, 255, 0.4)";
   
   // Flexbox for perfect text centering inside the border
   a.style.display = "inline-flex";
@@ -349,16 +362,19 @@ function injectNavbarButton(toggleFn) {
   a.style.top = "-3px"; 
   
   a.style.transition = "all 0.2s ease";
+  a.style.animation = "ux-glow-breathe 2.5s ease-in-out infinite";
   
   a.onmouseover = () => {
     a.style.backgroundColor = "rgba(88, 166, 255, 0.2)";
     a.style.border = "1px solid rgba(30, 98, 201, 1)";
-    a.style.boxShadow = "0 0 10px rgba(88, 166, 255, 0.8)"; // Brighter shine on hover
+    a.style.boxShadow = "0 0 16px rgba(88, 166, 255, 0.9), 0 0 4px rgba(88, 166, 255, 0.4)";
+    a.style.animation = "none";
   };
   a.onmouseout = () => {
     a.style.backgroundColor = "rgba(88, 166, 255, 0.1)";
     a.style.border = "1px solid rgba(30, 98, 201, 0.8)";
     a.style.boxShadow = "0 0 6px rgba(88, 166, 255, 0.4)";
+    a.style.animation = "ux-glow-breathe 2.5s ease-in-out infinite";
   };
   
   a.onclick = (e) => {

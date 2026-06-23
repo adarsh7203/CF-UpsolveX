@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
   if (request.action === "refreshCodeforces") {
-    fetch(`${API_BASE}/user/${request.handle}/refresh`, { method: 'POST' })
+    fetch(`${API_BASE}/extension/refresh/${request.handle}`, { method: 'POST' })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         return res.json();
