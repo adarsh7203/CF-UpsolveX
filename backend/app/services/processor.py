@@ -142,7 +142,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
         if key not in problem_status_map:
             letter = ''.join([c for c in idx if c.isalpha()]).upper()
             if letter:
-                if cid in live_participated_contest_ids:
+                if cid in official_contest_ids:
                     is_virt = False
                 elif cid in participated_contest_ids:
                     is_virt = True
