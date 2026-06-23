@@ -58,16 +58,20 @@ async def sync_user_data(user_id: str, cf_handle: str):
             if cid:
                 participated_contest_ids.add(cid)
                 
-    # Also add all missed contests after user registration
-    # Use the first contest participation time as the start date if available, 
-    # otherwise fallback to registrationTimeSeconds
-    if rating_history:
-        # rating_history is chronologically ordered
-        start_competing_time = rating_history[0].get("ratingUpdateTimeSeconds")
+    # Determine First Participation Time
+    # Use the earliest contest submission time to accurately capture unrated or out-of-competition starts
+    submission_times = [
+        sub["creationTimeSeconds"]
+        for sub in submissions
+        if sub.get("contestId") and "creationTimeSeconds" in sub
+    ]
+    
+    if submission_times:
+        start_competing_time = min(submission_times)
     else:
+        # Fallback to registration time if no submissions exist
         user_info = await get_user_info(cf_handle)
         import time
-        # Default to 1 year ago if API fails
         default_reg_time = int(time.time()) - (365 * 24 * 60 * 60)
         start_competing_time = user_info.get("registrationTimeSeconds", default_reg_time) if user_info else default_reg_time
 
