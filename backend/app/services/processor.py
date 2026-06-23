@@ -156,6 +156,14 @@ async def sync_user_data(user_id: str, cf_handle: str):
                     "is_virtual": is_virt
                 }
                 contest_problem_counts[cid] = contest_problem_counts.get(cid, 0) + 1
+        else:
+            # Update is_virtual for existing problems in case their status changed
+            if cid in live_participated_contest_ids:
+                problem_status_map[key]["is_virtual"] = False
+            elif cid in participated_contest_ids:
+                problem_status_map[key]["is_virtual"] = True
+            else:
+                problem_status_map[key]["is_virtual"] = None
 
     # Now augment ANY bugged participated contests (< 4 problems) to get unattempted problems
     import httpx
