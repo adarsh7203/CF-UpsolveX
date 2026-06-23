@@ -18,7 +18,7 @@ def set_cached(key: str, data: Any):
 
 async def get_user_rating(handle: str) -> List[Dict[str, Any]]:
     """Fetch rating history for a user (Signal 1 for participation)."""
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(f"{CF_API_BASE}/user.rating", params={"handle": handle, "lang": "en"})
         if response.status_code != 200:
             return []
