@@ -115,7 +115,7 @@ async def get_all_problems() -> List[Dict[str, Any]]:
     if cached_data is not None:
         return cached_data
         
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.get(f"{CF_API_BASE}/problemset.problems", params={"lang": "en"})
         if response.status_code != 200:
             return []
