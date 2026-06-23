@@ -45,7 +45,7 @@ async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any
     if cached_data is not None:
         return cached_data
         
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60.0) as client:
         # count=10000 to get a large history, can be optimized later
         response = await client.get(f"{CF_API_BASE}/user.status", params={"handle": handle, "from": 1, "count": count, "lang": "en"})
         if response.status_code != 200:
