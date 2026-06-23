@@ -41,7 +41,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
     
     for sub in submissions:
         p_type = sub.get("author", {}).get("participantType")
-        if p_type in ["CONTESTANT", "OUT_OF_COMPETITION"]:
+        if p_type == "CONTESTANT":
             cid = sub.get("contestId")
             if cid:
                 live_participated_contest_ids.add(cid)
@@ -49,7 +49,7 @@ async def sync_user_data(user_id: str, cf_handle: str):
     participated_contest_ids = set(live_participated_contest_ids)
     for sub in submissions:
         p_type = sub.get("author", {}).get("participantType")
-        if include_virtual and p_type == "VIRTUAL":
+        if p_type == "OUT_OF_COMPETITION" or (include_virtual and p_type == "VIRTUAL"):
             cid = sub.get("contestId")
             if cid:
                 participated_contest_ids.add(cid)
