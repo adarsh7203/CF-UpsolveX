@@ -8,8 +8,8 @@ const API_BASE = "https://cf-upsolvex.onrender.com/api";
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("CF UpsolveX Extension installed.");
-  // Setup alarm for periodic sync every 6 hours
-  chrome.alarms.create("syncData", { periodInMinutes: 360 });
+  // Setup alarm for periodic sync every 15 minutes
+  chrome.alarms.create("syncData", { periodInMinutes: 15 });
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {

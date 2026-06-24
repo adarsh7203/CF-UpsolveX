@@ -15,8 +15,8 @@ import { Toaster } from 'react-hot-toast'
 function App() {
   return (
     <>
-      <Toaster 
-        position="top-center" 
+      <Toaster
+        position="top-center"
         toastOptions={{
           style: {
             background: '#1e293b',
@@ -29,12 +29,12 @@ function App() {
               secondary: '#1e293b',
             },
           },
-        }} 
+        }}
       />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
-        
+
         {/* Protected Routes wrapped in Layout */}
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
         <Route path="/queue" element={<Layout><UpsolveQueue /></Layout>} />

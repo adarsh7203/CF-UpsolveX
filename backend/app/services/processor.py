@@ -141,6 +141,12 @@ async def sync_user_data(user_id: str, cf_handle: str):
     # (Fixes CF API bug where shared Div2 problems are omitted from problemset.problems)
     for sub in submissions:
         cid = sub.get("contestId")
+        
+        # Skip submissions for contests outside our target set (participated + missed).
+        # Without this, practice/upsolve submissions on old contests (before registration)
+        # would be added with is_virtual=None, incorrectly marking them as "missed".
+        if cid not in target_contest_ids:
+            continue
             
         prob = sub.get("problem", {})
         idx = prob.get("index")
