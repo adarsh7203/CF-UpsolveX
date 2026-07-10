@@ -2,11 +2,37 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.db.supabase_client import supabase
 from app.services.email_service import send_reminder_email
 from app.services.contest_detail import format_contest_history
+import requests
+
+def get_finished_contest_ids():
+    """Fetch all contest IDs whose system testing is complete (phase = FINISHED)."""
+    try:
+        response = requests.get(
+            "https://codeforces.com/api/contest.list",
+            params={"lang": "en"},
+            timeout=15
+        )
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("status") == "OK":
+                return set(
+                    c["id"] for c in data.get("result", [])
+                    if c.get("phase") == "FINISHED"
+                )
+    except Exception as e:
+        print(f"Failed to fetch contest list for phase check: {e}")
+    return None  # None = API failure (distinct from empty set)
 
 def check_and_send_emails():
     """Scheduled job to trigger emails for newly completed contests."""
     print("Checking for pending emails...")
     if not supabase:
+        return
+    
+    # Fetch finished contest IDs to ensure system testing is complete
+    finished_contests = get_finished_contest_ids()
+    if finished_contests is None:
+        print("Could not verify contest phases from CF API. Skipping email cycle to avoid wrong data.")
         return
         
     users_res = supabase.table("users").select("*").eq("email_enabled", True).execute()
@@ -31,7 +57,14 @@ def check_and_send_emails():
             # Format the data using the same logic as the dashboard
             contests_data = format_contest_history(problems_res.data)
             
+            actually_notified = []
+            
             for cid in all_new_contests:
+                # PHASE CHECK: Only send email if contest system testing is complete
+                if cid not in finished_contests:
+                    print(f"Contest {cid} not yet FINISHED (system testing in progress). Skipping email.")
+                    continue
+                    
                 if cid in participated_contests:
                     print(f"Sending email for user {user['cf_handle']}, contest {cid}")
                     
@@ -63,7 +96,11 @@ def check_and_send_emails():
                         upsolve_queue=upsolve_queue,
                         dashboard_link=dashboard_link
                     )
+                    
+                    actually_notified.append(cid)
             
-            # Update last_notified_contest_id once to the maximum processed contest
-            max_cid = max(all_new_contests)
-            supabase.table("users").update({"last_notified_contest_id": max_cid}).eq("id", user["id"]).execute()
+            # Only update last_notified_contest_id for contests we actually sent emails for
+            # This ensures contests skipped due to system testing are retried next cycle
+            if actually_notified:
+                max_cid = max(actually_notified)
+                supabase.table("users").update({"last_notified_contest_id": max_cid}).eq("id", user["id"]).execute()

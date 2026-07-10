@@ -1,20 +1,13 @@
 import httpx
 import time
 from typing import List, Dict, Any
+from cachetools import TTLCache
 
 CF_API_BASE = "https://codeforces.com/api"
 
-_cache = {}
-
-def get_cached(key: str, ttl_seconds: int = 300):
-    if key in _cache:
-        entry = _cache[key]
-        if time.time() - entry["time"] < ttl_seconds:
-            return entry["data"]
-    return None
-
-def set_cached(key: str, data: Any):
-    _cache[key] = {"time": time.time(), "data": data}
+# Bounded caches with auto-expiry to prevent unbounded memory growth
+_global_cache = TTLCache(maxsize=5, ttl=3600)    # all_contests, all_problems (1 hour TTL)
+_user_cache = TTLCache(maxsize=50, ttl=120)       # per-user submissions (2 min TTL)
 
 async def get_user_rating(handle: str) -> List[Dict[str, Any]]:
     """Fetch rating history for a user (Signal 1 for participation)."""
@@ -41,9 +34,8 @@ async def get_user_info(handle: str) -> Dict[str, Any]:
 async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any]]:
     """Fetch user submissions (Signal 2 and for checking solved/wrong/upsolved)."""
     cache_key = f"user_status_{handle}_{count}"
-    cached_data = get_cached(cache_key, ttl_seconds=120)
-    if cached_data is not None:
-        return cached_data
+    if cache_key in _user_cache:
+        return _user_cache[cache_key]
         
     async with httpx.AsyncClient(timeout=60.0) as client:
         # count=10000 to get a large history, can be optimized later
@@ -53,7 +45,7 @@ async def get_user_status(handle: str, count: int = 10000) -> List[Dict[str, Any
         data = response.json()
         if data.get("status") == "OK":
             res = data.get("result", [])
-            set_cached(cache_key, res)
+            _user_cache[cache_key] = res
             return res
 async def verify_user_handle(handle: str, verification_problem: str = "4A") -> bool:
     """Verifies handle ownership by checking for a recent Compilation Error on a specific problem."""
@@ -93,9 +85,8 @@ async def verify_user_handle(handle: str, verification_problem: str = "4A") -> b
 async def get_all_contests() -> List[Dict[str, Any]]:
     """Fetch all contests to get names and times."""
     cache_key = "all_contests"
-    cached_data = get_cached(cache_key, ttl_seconds=3600)
-    if cached_data is not None:
-        return cached_data
+    if cache_key in _global_cache:
+        return _global_cache[cache_key]
         
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.get(f"{CF_API_BASE}/contest.list", params={"lang": "en"})
@@ -104,16 +95,15 @@ async def get_all_contests() -> List[Dict[str, Any]]:
         data = response.json()
         if data.get("status") == "OK":
             res = data.get("result", [])
-            set_cached(cache_key, res)
+            _global_cache[cache_key] = res
             return res
         return []
 
 async def get_all_problems() -> List[Dict[str, Any]]:
     """Fetch all problems from the Codeforces problemset."""
     cache_key = "all_problems"
-    cached_data = get_cached(cache_key, ttl_seconds=3600)
-    if cached_data is not None:
-        return cached_data
+    if cache_key in _global_cache:
+        return _global_cache[cache_key]
         
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.get(f"{CF_API_BASE}/problemset.problems", params={"lang": "en"})
@@ -122,6 +112,6 @@ async def get_all_problems() -> List[Dict[str, Any]]:
         data = response.json()
         if data.get("status") == "OK" and "problems" in data.get("result", {}):
             res = data.get("result")["problems"]
-            set_cached(cache_key, res)
+            _global_cache[cache_key] = res
             return res
         return []

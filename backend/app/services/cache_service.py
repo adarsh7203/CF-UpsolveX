@@ -1,8 +1,8 @@
 from cachetools import TTLCache
 from app.db.supabase_client import supabase, fetch_all
 
-# Cache storing user_id -> list of problems (max 100 users, 10 mins TTL)
-user_problems_cache = TTLCache(maxsize=100, ttl=600)
+# Cache storing user_id -> list of problems (max 40 users, 10 mins TTL)
+user_problems_cache = TTLCache(maxsize=40, ttl=600)
 
 def get_cached_user_problems(user_id: str):
     """

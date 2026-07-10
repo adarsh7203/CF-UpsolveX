@@ -8,13 +8,14 @@ from app.routes import user, contest, upsolve, analytics, dashboard, notify, set
 from app.services.auth_middleware import verify_token
 from app.scheduler.contest_checker import sync_all_users
 from app.scheduler.email_trigger import check_and_send_emails
+from datetime import datetime, timedelta
 
 # Setup Scheduler
 scheduler = BackgroundScheduler()
-# Run sync every 1 hour
-scheduler.add_job(sync_all_users, 'interval', minutes=30)
-# Check for pending emails every 1 hour
-scheduler.add_job(check_and_send_emails, 'interval', minutes=30)
+# Run sync every 60 minutes
+scheduler.add_job(sync_all_users, 'interval', minutes=60)
+# Check for pending emails every 2 hours, staggered 5 min after sync to avoid overlap
+scheduler.add_job(check_and_send_emails, 'interval', minutes=120, next_run_time=datetime.now() + timedelta(minutes=5))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

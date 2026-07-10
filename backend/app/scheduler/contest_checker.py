@@ -2,6 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.services.processor import sync_user_data
 from app.db.supabase_client import supabase
 import asyncio
+import gc
 
 def sync_all_users():
     """Scheduled job to check for new contests and update problem statuses for all users."""
@@ -24,5 +25,8 @@ def sync_all_users():
             print(f"Sync result for {user['cf_handle']}: {res}")
         except Exception as e:
             print(f"Error syncing {user['cf_handle']}: {e}")
+        finally:
+            # Force garbage collection between users to free memory
+            gc.collect()
             
     loop.close()
