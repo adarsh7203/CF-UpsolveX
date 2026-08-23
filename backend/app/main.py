@@ -35,7 +35,11 @@ app = FastAPI(
 # CORS Middleware for Frontend Communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update this in production
+    allow_origins=[
+        "https://cfupsolvex.netlify.app",  # Production frontend
+        "http://localhost:5173",            # Local dev (Vite)
+        "http://localhost:3000",            # Local dev (alt)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
